@@ -36,3 +36,6 @@ next-env.d.ts
 # SQLite database file for local development
 *.db
 *.db-journal
+
+.vercel
+.env*
