@@ -165,3 +165,4 @@ Visit: `http://localhost:3000`
 1. **Database:** In production, change `DATABASE_URL` in `.env` to point to a PostgreSQL cluster (e.g. Supabase, Neon, AWS RDS, or Railway). In `prisma/schema.prisma`, change `provider = "sqlite"` to `provider = "postgresql"`.
 2. **Build:** Run `npm run prisma:push && npm run build`.
 3. **Deploy:** Deploy directly to Vercel, Railway, AWS ECS, or Docker container with zero modifications required.
+# wepass.in
