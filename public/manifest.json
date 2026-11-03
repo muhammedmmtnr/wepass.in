@@ -1,0 +1,17 @@
+{
+  "name": "WePass — Restaurant Queue & Table Platform",
+  "short_name": "WePass",
+  "description": "Your Queue. Your Time. Your Table.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8F3EC",
+  "theme_color": "#05A85C",
+  "icons": [
+    {
+      "src": "/brand/logo-card.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

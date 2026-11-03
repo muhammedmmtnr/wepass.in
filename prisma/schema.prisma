@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          String         @default("RESTAURANT_STAFF") // SUPER_ADMIN, RESTAURANT_OWNER, RESTAURANT_MANAGER, RESTAURANT_STAFF
+  status        String         @default("ACTIVE") // ACTIVE, PENDING, SUSPENDED
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  ownedRestaurants Restaurant[] @relation("RestaurantOwner")
+  staffProfiles    Staff[]
+  fairnessAudits   QueueFairnessAudit[]
+  auditLogs        SystemAuditLog[]
+}
+
+model Restaurant {
+  id                      String        @id @default(uuid())
+  name                    String
+  slug                    String        @unique
+  logoUrl                 String?
+  bannerUrl               String?
+  address                 String?
+  city                    String?
+  country                 String?       @default("India")
+  phone                   String?
+  email                   String?
+  category                String?       @default("Casual Dining")
+  status                  String        @default("ACTIVE") // ACTIVE, PENDING_APPROVAL, SUSPENDED, REJECTED
+  isQueueOpen             Boolean       @default(true)
+  avgDiningDurationMin    Int           @default(45)
+  maxPartySize            Int           @default(12)
+  estimatedWaitPerPartyMin Int          @default(10)
+  callDeadlineMinutes     Int           @default(10)
+  ownerId                 String
+  owner                   User          @relation("RestaurantOwner", fields: [ownerId], references: [id])
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  staffProfiles           Staff[]
+  tables                  Table[]
+  queueEntries            QueueEntry[]
+  qrConfig                QRConfiguration?
+  menuCategories          MenuCategory[]
+  menuItems               MenuItem[]
+  subscriptions           Subscription[]
+  fairnessAudits          QueueFairnessAudit[]
+  notificationLogs        NotificationLog[]
+  queueEvents             QueueEvent[]
+}
+
+model Staff {
+  id           String     @id @default(uuid())
+  userId       String
+  restaurantId String
+  role         String     @default("RESTAURANT_STAFF") // RESTAURANT_MANAGER, RESTAURANT_STAFF
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  user         User       @relation(fields: [userId], references: [id])
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+}
+
+model Table {
+  id           String      @id @default(uuid())
+  restaurantId String
+  tableNumber  String
+  capacity     Int         @default(4)
+  section      String      @default("MAIN") // MAIN, PATIO, VIP, BAR, OUTDOOR
+  status       String      @default("AVAILABLE") // AVAILABLE, OCCUPIED, RESERVED, CLEANING
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  queueEntries QueueEntry[]
+
+  @@unique([restaurantId, tableNumber])
+}
+
+model QueueEntry {
+  id                   String        @id @default(uuid())
+  restaurantId         String
+  token                String        // e.g. A01, B03, C02
+  guestName            String
+  guestPhone           String
+  partySize            Int           @default(2)
+  tableGroup           String        @default("A") // A (1-2), B (3-4), C (5-6), D (7+)
+  status               String        @default("WAITING") // WAITING, CALLED, CONFIRMED, SEATED, COMPLETED, PAUSED, SKIPPED, CANCELLED, NO_SHOW
+  specialRequests      String?
+  accessibilityNeeds   Boolean       @default(false)
+  assignedTableId      String?
+  estimatedWaitMinutes Int           @default(15)
+  calledAt             DateTime?
+  callDeadlineAt       DateTime?
+  confirmedAt          DateTime?
+  seatedAt             DateTime?
+  completedAt          DateTime?
+  cancelledAt          DateTime?
+  cancellationReason   String?
+  isManualEntry        Boolean       @default(false)
+  createdByStaffId     String?
+  sessionSecret        String?       // Unique token stored in guest browser
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  restaurant           Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  assignedTable        Table?        @relation(fields: [assignedTableId], references: [id], onDelete: SetNull)
+  events               QueueEvent[]
+  notificationLogs     NotificationLog[]
+  fairnessAudits       QueueFairnessAudit[]
+
+  @@index([restaurantId, status])
+  @@index([restaurantId, guestPhone])
+}
+
+model QueueEvent {
+  id                 String      @id @default(uuid())
+  queueEntryId       String
+  restaurantId       String
+  eventType          String      // JOINED, CALLED, CONFIRMED, TABLE_ASSIGNED, SEATED, COMPLETED, PAUSED, RESUMED, SKIPPED, CANCELLED, NO_SHOW, WHATSAPP_OPENED
+  description        String?
+  performedByUserId  String?
+  createdAt          DateTime    @default(now())
+
+  queueEntry         QueueEntry  @relation(fields: [queueEntryId], references: [id], onDelete: Cascade)
+  restaurant         Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model QueueFairnessAudit {
+  id                     String      @id @default(uuid())
+  restaurantId           String
+  targetQueueEntryId     String
+  skippedQueueEntryIds   String      // JSON array of queue entry IDs passed over
+  staffUserId            String
+  reason                 String      // EARLIER_GUEST_NOT_PRESENT, TABLE_COMPATIBILITY, ACCESSIBILITY_REQUIREMENT, GUEST_REQUESTED_PRIORITY, MANAGER_APPROVED_EXCEPTION, OTHER
+  customNotes            String?
+  managerApproved        Boolean     @default(false)
+  managerUserId          String?
+  createdAt              DateTime    @default(now())
+
+  restaurant             Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  targetQueueEntry       QueueEntry  @relation(fields: [targetQueueEntryId], references: [id], onDelete: Cascade)
+  staffUser              User        @relation(fields: [staffUserId], references: [id])
+}
+
+model NotificationLog {
+  id             String      @id @default(uuid())
+  restaurantId   String
+  queueEntryId   String?
+  type           String      // WHATSAPP, SMS, AUDIO_CALL, SYSTEM
+  recipientPhone String
+  message        String
+  status         String      @default("INITIATED") // INITIATED, OPENED, DELIVERED, FAILED
+  createdAt      DateTime    @default(now())
+
+  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  queueEntry     QueueEntry? @relation(fields: [queueEntryId], references: [id], onDelete: SetNull)
+}
+
+model QRConfiguration {
+  id                String     @id @default(uuid())
+  restaurantId      String     @unique
+  permanentUrl      String
+  totalScans        Int        @default(0)
+  totalJoins        Int        @default(0)
+  lastRegeneratedAt DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model MenuCategory {
+  id           String     @id @default(uuid())
+  restaurantId String
+  name         String
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+}
+
+model MenuItem {
+  id           String       @id @default(uuid())
+  restaurantId String
+  categoryId   String?
+  name         String
+  description  String?
+  price        Float
+  imageUrl     String?
+  isVegetarian Boolean      @default(false)
+  isVegan      Boolean      @default(false)
+  isGlutenFree Boolean      @default(false)
+  isAvailable  Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+}
+
+model SubscriptionPlan {
+  id            String         @id @default(uuid())
+  name          String         // FREE, BASIC, PRO, ENTERPRISE
+  tier          String         @unique // free, basic, pro, enterprise
+  description   String?
+  priceMonthly  Float          @default(0)
+  priceYearly   Float          @default(0)
+  maxTables     Int            @default(10)
+  maxDailyQueue Int            @default(50)
+  features      String         // JSON string of features array
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id           String           @id @default(uuid())
+  restaurantId String
+  planId       String
+  status       String           @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED, SUSPENDED
+  startedAt    DateTime         @default(now())
+  expiresAt    DateTime
+  billingCycle String           @default("MONTHLY") // MONTHLY, YEARLY
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id])
+}
+
+model SystemAuditLog {
+  id                String    @id @default(uuid())
+  action            String
+  entityType        String
+  entityId          String?
+  performedByUserId String?
+  details           String?   // JSON
+  ipAddress         String?
+  createdAt         DateTime  @default(now())
+
+  performedBy       User?     @relation(fields: [performedByUserId], references: [id], onDelete: SetNull)
+}
