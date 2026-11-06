@@ -55,7 +55,11 @@ export default function GuestQueueTrackingPage({
   // Fetch ticket details
   const fetchTicket = async () => {
     try {
-      const res = await fetch(`/api/queue/${token}${slug ? `?slug=${slug}` : ''}`);
+      const accessToken =
+        localStorage.getItem(`wepass_secret_${token}`) || searchParams.get('access');
+      const res = await fetch(`/api/queue/${token}${slug ? `?slug=${slug}` : ''}`, {
+        headers: accessToken ? { 'x-queue-access-token': accessToken } : undefined,
+      });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Ticket not found.');
@@ -66,6 +70,10 @@ export default function GuestQueueTrackingPage({
         setPartiesAhead(data.partiesAhead);
         setEstimatedWait(data.estimatedWaitMinutes);
         setLastRefreshed(new Date());
+        if (searchParams.has('access')) {
+          const cleanUrl = `/queue/${token}${slug ? `?slug=${encodeURIComponent(slug)}` : ''}`;
+          router.replace(cleanUrl);
+        }
 
         // Play chime once if status changes to CALLED
         if (data.ticket.status === 'CALLED' && !calledSoundPlayed.current) {
@@ -93,47 +101,57 @@ export default function GuestQueueTrackingPage({
   };
 
   useEffect(() => {
-    fetchTicket();
+    let cancelled = false;
+    let eventSource: EventSource | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
-    // Setup Server-Sent Events (SSE) for live tracking
-    const eventSource = new EventSource(`/api/queue/stream?token=${token}`);
+    const connect = async () => {
+      await fetchTicket();
+      if (cancelled) return;
 
-    eventSource.onopen = () => {
-      setIsLiveConnected(true);
+      const streamParams = new URLSearchParams({ token });
+      if (slug) streamParams.set('slug', slug);
+      eventSource = new EventSource(`/api/queue/stream?${streamParams}`);
+
+      eventSource.onopen = () => {
+        setIsLiveConnected(true);
+      };
+
+      eventSource.addEventListener('guest_update', (event) => {
+        try {
+          const update = JSON.parse(event.data);
+          setTicket((prev: any) => ({
+            ...prev,
+            status: update.status,
+            assignedTable: update.assignedTable,
+            calledAt: update.calledAt,
+            callDeadlineAt: update.callDeadlineAt,
+            confirmedAt: update.confirmedAt,
+            seatedAt: update.seatedAt,
+          }));
+          setPosition(update.groupPosition);
+          setOverallPosition(update.overallPosition);
+          setPartiesAhead(update.partiesAhead);
+          setEstimatedWait(update.estimatedWaitMinutes);
+          setLastRefreshed(new Date());
+        } catch (e) {}
+      });
+
+      eventSource.onerror = () => {
+        setIsLiveConnected(false);
+      };
+
+      pollInterval = setInterval(() => {
+        fetchTicket();
+      }, 5000);
     };
 
-    eventSource.addEventListener('guest_update', (event) => {
-      try {
-        const update = JSON.parse(event.data);
-        setTicket((prev: any) => ({
-          ...prev,
-          status: update.status,
-          assignedTable: update.assignedTable,
-          calledAt: update.calledAt,
-          callDeadlineAt: update.callDeadlineAt,
-          confirmedAt: update.confirmedAt,
-          seatedAt: update.seatedAt,
-        }));
-        setPosition(update.groupPosition);
-        setOverallPosition(update.overallPosition);
-        setPartiesAhead(update.partiesAhead);
-        setEstimatedWait(update.estimatedWaitMinutes);
-        setLastRefreshed(new Date());
-      } catch (e) {}
-    });
-
-    eventSource.onerror = () => {
-      setIsLiveConnected(false);
-    };
-
-    // Fallback polling every 5s if SSE disconnects
-    const pollInterval = setInterval(() => {
-      fetchTicket();
-    }, 5000);
+    void connect();
 
     return () => {
-      eventSource.close();
-      clearInterval(pollInterval);
+      cancelled = true;
+      eventSource?.close();
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, [token, slug]);
 
@@ -157,8 +175,10 @@ export default function GuestQueueTrackingPage({
   const handleImComing = async () => {
     setConfirmingArrival(true);
     try {
+      const accessToken = localStorage.getItem(`wepass_secret_${token}`);
       const res = await fetch(`/api/queue/${token}/im-coming${slug ? `?slug=${slug}` : ''}`, {
         method: 'POST',
+        headers: accessToken ? { 'x-queue-access-token': accessToken } : undefined,
       });
       const data = await res.json();
       if (res.ok) {
@@ -167,6 +187,8 @@ export default function GuestQueueTrackingPage({
           status: 'CONFIRMED',
           confirmedAt: new Date().toISOString(),
         }));
+      } else {
+        alert(data.error || 'Unable to confirm arrival. Please notify the host.');
       }
     } catch (e) {
       alert('Network issue confirming arrival. Please notify host directly.');
@@ -179,9 +201,13 @@ export default function GuestQueueTrackingPage({
   const handleCancelQueue = async () => {
     setCancelling(true);
     try {
+      const accessToken = localStorage.getItem(`wepass_secret_${token}`);
       const res = await fetch(`/api/queue/${token}/cancel${slug ? `?slug=${slug}` : ''}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'x-queue-access-token': accessToken } : {}),
+        },
         body: JSON.stringify({ reason: 'Guest cancelled from live tracker' }),
       });
       if (res.ok) {
@@ -190,6 +216,10 @@ export default function GuestQueueTrackingPage({
         if (slug) {
           localStorage.removeItem(`wepass_active_token_${slug}`);
         }
+        localStorage.removeItem(`wepass_secret_${token}`);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to cancel. Please try again.');
       }
     } catch (e) {
       alert('Failed to cancel. Please try again.');

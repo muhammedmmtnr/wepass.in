@@ -57,11 +57,7 @@ export async function POST(req: NextRequest) {
     const existingActive = await checkDuplicateQueue(restaurantId, guestPhone);
     if (existingActive) {
       return NextResponse.json(
-        {
-          error: 'You already have an active queue ticket at this restaurant.',
-          existingToken: existingActive.token,
-          existingEntry: existingActive,
-        },
+        { error: 'You already have an active queue ticket at this restaurant.' },
         { status: 409 }
       );
     }
@@ -69,7 +65,7 @@ export async function POST(req: NextRequest) {
     // Party-size grouping
     const tableGroup = getTableGroupByPartySize(parsedPartySize);
     const token = await generateNextToken(restaurantId, tableGroup);
-    const sessionSecret = crypto.randomBytes(16).toString('hex');
+    const sessionSecret = crypto.randomBytes(32).toString('hex');
 
     // Create queue entry
     const entry = await prisma.$transaction(async (tx) => {
@@ -109,10 +105,9 @@ export async function POST(req: NextRequest) {
 
     const positionInfo = await calculateQueuePosition(entry.id);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       token: entry.token,
-      sessionSecret: entry.sessionSecret,
       entry: {
         id: entry.id,
         token: entry.token,
@@ -129,6 +124,16 @@ export async function POST(req: NextRequest) {
       partiesAhead: positionInfo.partiesAhead,
       estimatedWaitMinutes: positionInfo.estimatedWaitMinutes,
     });
+
+    response.cookies.set(`wepass_queue_${entry.id}`, sessionSecret, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/queue',
+      maxAge: 7 * 24 * 60 * 60,
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Queue join error:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

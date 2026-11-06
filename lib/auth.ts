@@ -70,3 +70,51 @@ export async function requireAuth(
 
   return { user: session };
 }
+
+export async function requireRestaurantAuth(
+  req: NextRequest,
+  restaurantId: string,
+  allowedRoles: string[] = ['RESTAURANT_OWNER', 'RESTAURANT_MANAGER', 'RESTAURANT_STAFF']
+): Promise<{ user: TokenPayload | null; errorResponse?: NextResponse }> {
+  const session = await getAuthSession(req);
+  if (!session) {
+    return {
+      user: null,
+      errorResponse: NextResponse.json({ error: 'Unauthorized. Please sign in.' }, { status: 401 }),
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      status: true,
+      ownedRestaurants: {
+        where: { id: restaurantId },
+        select: { id: true },
+      },
+      staffProfiles: {
+        where: { restaurantId, isActive: true },
+        select: { role: true },
+      },
+    },
+  });
+
+  if (!user || user.status !== 'ACTIVE') {
+    return {
+      user: null,
+      errorResponse: NextResponse.json({ error: 'Your account is inactive.' }, { status: 403 }),
+    };
+  }
+
+  const role = user.ownedRestaurants.length
+    ? 'RESTAURANT_OWNER'
+    : user.staffProfiles[0]?.role;
+  if (!role || !allowedRoles.includes(role)) {
+    return {
+      user: null,
+      errorResponse: NextResponse.json({ error: 'Forbidden. Insufficient permissions.' }, { status: 403 }),
+    };
+  }
+
+  return { user: { ...session, role } };
+}

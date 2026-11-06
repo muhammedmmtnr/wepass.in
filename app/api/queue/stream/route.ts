@@ -1,13 +1,32 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { calculateQueuePosition } from '@/lib/queueEngine';
+import { hasQueueAccess } from '@/lib/queueAccess';
+import { requireRestaurantAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token');
+  const slug = searchParams.get('slug');
   const restaurantId = searchParams.get('restaurantId');
+
+  if (token) {
+    const entry = await prisma.queueEntry.findFirst({
+      where: {
+        token: token.toUpperCase().trim(),
+        ...(slug ? { restaurant: { slug } } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!entry) return new Response('Queue ticket not found.', { status: 404 });
+    if (!hasQueueAccess(req, entry)) return new Response('Queue access denied.', { status: 403 });
+  } else if (restaurantId) {
+    const auth = await requireRestaurantAuth(req, restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
+  }
 
   const encoder = new TextEncoder();
 
@@ -31,7 +50,10 @@ export async function GET(req: NextRequest) {
           if (token) {
             // Guest live tracking stream
             const entry = await prisma.queueEntry.findFirst({
-              where: { token: token.toUpperCase().trim() },
+              where: {
+                token: token.toUpperCase().trim(),
+                ...(slug ? { restaurant: { slug } } : {}),
+              },
               orderBy: { createdAt: 'desc' },
               include: {
                 assignedTable: true,

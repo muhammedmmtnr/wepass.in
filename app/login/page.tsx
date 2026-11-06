@@ -7,7 +7,6 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  ShieldCheck,
   AlertCircle,
   KeyRound,
   Store,
@@ -40,9 +39,7 @@ export default function LoginPage() {
         setError(data.error || 'Invalid credentials');
       } else {
         const role = data.user.role;
-        if (role === 'SUPER_ADMIN') {
-          router.push('/admin');
-        } else if (role === 'RESTAURANT_OWNER') {
+        if (role === 'RESTAURANT_OWNER') {
           router.push('/dashboard');
         } else {
           router.push('/staff');
@@ -160,17 +157,6 @@ export default function LoginPage() {
                 <span className="text-[10px] text-slate-400">staff@olivebistro.com</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin@wepass.in', 'AdminPassword123!')}
-                className="w-full flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-xs text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-slate-900" />
-                  <span className="font-bold text-slate-900">Super Admin</span>
-                </div>
-                <span className="text-[10px] text-slate-400">admin@wepass.in</span>
-              </button>
             </div>
           </div>
         </div>

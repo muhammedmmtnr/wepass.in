@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthSession } from '@/lib/auth';
+import { requireRestaurantAuth } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
@@ -8,7 +8,6 @@ export async function POST(
 ) {
   try {
     const rawParam = params.token;
-    const session = await getAuthSession(req);
 
     const entry = await prisma.queueEntry.findFirst({
       where: {
@@ -21,13 +20,21 @@ export async function POST(
       return NextResponse.json({ error: 'Queue entry not found' }, { status: 404 });
     }
 
+    const auth = await requireRestaurantAuth(req, entry.restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
+
     // Sanitize guest phone for WhatsApp international format
     let cleanPhone = entry.guestPhone.replace(/[^0-9]/g, '');
     if (cleanPhone.length === 10) {
       cleanPhone = `91${cleanPhone}`; // Default Indian country code if 10 digits
     }
 
-    const message = `Hello ${entry.guestName}, your table at ${entry.restaurant.name} is ready! Please come to the entrance. Your token is ${entry.token}. Track live: http://localhost:3000/queue/${entry.token}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+    const ticketUrl = new URL(`/queue/${entry.token}`, appUrl);
+    ticketUrl.searchParams.set('slug', entry.restaurant.slug);
+    if (entry.sessionSecret) ticketUrl.searchParams.set('access', entry.sessionSecret);
+    const message = `Hello ${entry.guestName}, your table at ${entry.restaurant.name} is ready! Please come to the entrance. Your token is ${entry.token}. Track live: ${ticketUrl.toString()}`;
+    const loggedMessage = message.replace(ticketUrl.toString(), `/queue/${entry.token}?slug=${entry.restaurant.slug}`);
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
@@ -39,7 +46,7 @@ export async function POST(
         queueEntryId: entry.id,
         type: 'WHATSAPP',
         recipientPhone: entry.guestPhone,
-        message,
+        message: loggedMessage,
         status: 'OPENED',
       },
     });
@@ -50,7 +57,7 @@ export async function POST(
         restaurantId: entry.restaurantId,
         eventType: 'WHATSAPP_OPENED',
         description: `Host opened WhatsApp chat with prefilled message for token ${entry.token}`,
-        performedByUserId: session?.userId || null,
+        performedByUserId: auth.user!.userId,
       },
     });
 

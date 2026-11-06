@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { hasQueueAccess } from '@/lib/queueAccess';
 
 export async function POST(
   req: NextRequest,
@@ -21,6 +22,10 @@ export async function POST(
 
     if (!entry) {
       return NextResponse.json({ error: 'Queue ticket not found.' }, { status: 404 });
+    }
+
+    if (!hasQueueAccess(req, entry)) {
+      return NextResponse.json({ error: 'Queue access denied.' }, { status: 403 });
     }
 
     if (entry.status !== 'CALLED') {

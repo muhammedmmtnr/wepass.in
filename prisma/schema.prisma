@@ -13,7 +13,7 @@ model User {
   passwordHash  String
   name          String
   phone         String?
-  role          String         @default("RESTAURANT_STAFF") // SUPER_ADMIN, RESTAURANT_OWNER, RESTAURANT_MANAGER, RESTAURANT_STAFF
+  role          String         @default("RESTAURANT_STAFF") // RESTAURANT_OWNER, RESTAURANT_MANAGER, RESTAURANT_STAFF
   status        String         @default("ACTIVE") // ACTIVE, PENDING, SUSPENDED
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -37,6 +37,7 @@ model Restaurant {
   email                   String?
   category                String?       @default("Casual Dining")
   status                  String        @default("ACTIVE") // ACTIVE, PENDING_APPROVAL, SUSPENDED, REJECTED
+  isDemo                  Boolean       @default(false)
   isQueueOpen             Boolean       @default(true)
   avgDiningDurationMin    Int           @default(45)
   maxPartySize            Int           @default(12)

@@ -100,22 +100,10 @@ export default function RestaurantLandingPage({
 
       const data = await res.json();
 
-      if (res.status === 409) {
-        // Duplicate active queue found - save and redirect
-        if (data.existingToken) {
-          localStorage.setItem(`wepass_active_token_${slug}`, data.existingToken);
-          router.push(`/queue/${data.existingToken}?slug=${slug}`);
-          return;
-        }
-      }
-
       if (!res.ok) {
         setFormError(data.error || 'Unable to join queue right now.');
       } else {
         localStorage.setItem(`wepass_active_token_${slug}`, data.token);
-        if (data.sessionSecret) {
-          localStorage.setItem(`wepass_secret_${data.token}`, data.sessionSecret);
-        }
         router.push(`/queue/${data.token}?slug=${slug}`);
       }
     } catch (err) {
@@ -330,7 +318,7 @@ export default function RestaurantLandingPage({
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-slate-400">
-                  Used exclusively for live queue updates and table notification.
+                  Used to manage your queue ticket and contact you about your table.
                 </p>
               </div>
 

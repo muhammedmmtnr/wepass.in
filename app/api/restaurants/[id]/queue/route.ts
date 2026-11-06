@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthSession } from '@/lib/auth';
+import { requireRestaurantAuth } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
@@ -8,6 +8,9 @@ export async function GET(
 ) {
   try {
     const restaurantId = params.id;
+    const auth = await requireRestaurantAuth(req, restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
+
     const { searchParams } = new URL(req.url);
     const view = searchParams.get('view') || 'active'; // 'active', 'history', 'all'
     const group = searchParams.get('group'); // 'A', 'B', 'C', 'D'

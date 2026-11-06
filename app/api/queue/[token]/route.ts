@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { calculateQueuePosition } from '@/lib/queueEngine';
+import { hasQueueAccess } from '@/lib/queueAccess';
 
 export async function GET(
   req: NextRequest,
@@ -51,9 +52,13 @@ export async function GET(
       return NextResponse.json({ error: 'Queue ticket not found.' }, { status: 404 });
     }
 
+    if (!hasQueueAccess(req, entry)) {
+      return NextResponse.json({ error: 'Queue access denied. Join again from the restaurant QR code.' }, { status: 403 });
+    }
+
     const positionInfo = await calculateQueuePosition(entry.id);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       ticket: {
         id: entry.id,
@@ -80,6 +85,18 @@ export async function GET(
       partiesAhead: positionInfo.partiesAhead,
       estimatedWaitMinutes: positionInfo.estimatedWaitMinutes,
     });
+
+    if (req.headers.has('x-queue-access-token') && entry.sessionSecret) {
+      response.cookies.set(`wepass_queue_${entry.id}`, entry.sessionSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/api/queue',
+        maxAge: 7 * 24 * 60 * 60,
+      });
+    }
+
+    return response;
   } catch (error: any) {
     console.error('Fetch queue token error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

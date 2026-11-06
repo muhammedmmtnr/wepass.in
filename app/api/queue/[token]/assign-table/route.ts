@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthSession } from '@/lib/auth';
+import { requireRestaurantAuth } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
@@ -8,7 +8,6 @@ export async function POST(
 ) {
   try {
     const rawParam = params.token;
-    const session = await getAuthSession(req);
     const { tableId } = await req.json();
 
     if (!tableId) {
@@ -24,6 +23,9 @@ export async function POST(
     if (!entry) {
       return NextResponse.json({ error: 'Queue entry not found' }, { status: 404 });
     }
+
+    const auth = await requireRestaurantAuth(req, entry.restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
 
     const table = await prisma.table.findUnique({
       where: { id: tableId },
@@ -60,7 +62,7 @@ export async function POST(
           restaurantId: entry.restaurantId,
           eventType: 'TABLE_ASSIGNED',
           description: `Assigned Table ${table.tableNumber} (Capacity: ${table.capacity})`,
-          performedByUserId: session?.userId || null,
+          performedByUserId: auth.user!.userId,
         },
       });
 

@@ -2,7 +2,7 @@
 
 > **"WePass — Your Queue. Your Time. Your Table."**
 
-WePass is a production-ready, full-stack restaurant waitlist, queue, and table management platform. Inspired by the simplicity of Vardivo but crafted with its own original brand identity, WePass seamlessly connects restaurant guests, front-desk staff, restaurant owners, and super-admins in a single, database-driven ecosystem.
+WePass is a production-ready, full-stack restaurant waitlist, queue, and table management platform. Inspired by the simplicity of Vardivo but crafted with its own original brand identity, WePass seamlessly connects restaurant guests, front-desk staff, and restaurant owners in a single, database-driven ecosystem.
 
 ---
 
@@ -15,11 +15,11 @@ WePass is a production-ready, full-stack restaurant waitlist, queue, and table m
   - Warm Amber Accent: `#F59E0B` / `#D97706`
   - Crisp Surfaces: `#FFFFFF` with soft borders and subtle shadows
 - **Typography:** Inter with clear visual hierarchy and monospace tokens.
-- **Zero Demo Mocks:** All metrics, live positions, tables, queue entries, and audits are persisted in real database records via Prisma ORM.
+- **Database-backed proof:** Public restaurant usage totals are calculated from actual queue records for active, non-demo restaurants; seeded demo activity is excluded.
 
 ---
 
-## 📱 The 4 Connected Experiences
+## 📱 The 3 Connected Experiences
 
 ### 1. Guest-Facing Mobile PWA (`/r/[slug]` & `/queue/[token]`)
 - **Step 1 — Static Reusable QR:** Every restaurant receives one permanent QR code (`/r/olive-bistro`). All guests scan this static QR code; no ephemeral codes needed.
@@ -59,12 +59,6 @@ WePass is a production-ready, full-stack restaurant waitlist, queue, and table m
 - **Analytics & Reports (`/dashboard/reports`):** Daily, weekly, monthly reports with CSV export and fairness exception log.
 - **Settings (`/dashboard/settings`):** Queue engine parameter tuning (wait time per party, max party size, call deadline, dining duration).
 
-### 4. WePass Super-Admin Dashboard (`/admin`)
-- **Platform Analytics:** Total restaurants, active queues today, all-time guests served, MRR, subscription tier breakdown, real-time activity feed.
-- **Restaurants Directory (`/admin/restaurants`):** Complete multi-tenant CRUD, approval workflow, suspend/activate toggles, soft-delete safeguards.
-- **Plans & Subscriptions (`/admin/subscriptions`):** Manage Free, Basic, Pro, Enterprise plans, pricing, and active subscriptions.
-- **Global Audit Trail (`/admin/audit`):** Platform-wide fairness exception logs and system event trace.
-
 ---
 
 ## ⚙️ Queue Management Engine Specifications
@@ -87,7 +81,7 @@ Parties are categorized into dedicated table groups to ensure equitable table al
 
 Built with **Prisma ORM** (configured for zero-config SQLite out-of-the-box, with native support for PostgreSQL via `DATABASE_URL`):
 
-- `User`: Roles (`SUPER_ADMIN`, `RESTAURANT_OWNER`, `RESTAURANT_MANAGER`, `RESTAURANT_STAFF`), password hashes, session states.
+- `User`: Roles (`RESTAURANT_OWNER`, `RESTAURANT_MANAGER`, `RESTAURANT_STAFF`), password hashes, session states.
 - `Restaurant`: Multi-tenant restaurant profile, slug, dining parameters, queue open/close state.
 - `Staff`: Relation mapping users to restaurants with permissions and active flags.
 - `Table`: Dining tables with numbers, capacity, sections, and live status (`AVAILABLE`, `OCCUPIED`, `RESERVED`, `CLEANING`).
@@ -114,14 +108,95 @@ Create a `.env` file in the project root:
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="wepass-jwt-secret-secure-key-restaurant-system-2026"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+GOOGLE_APPS_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
 ```
+
+### Business lead collection to Google Sheets
+
+The public business enquiry form is available at `/business-registration`. Visitors can send a business enquiry or submit a booking request with a requested date and time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. The spreadsheet URL by itself is not a submission endpoint.
+
+1. Open the supplied spreadsheet with ID `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc` and create or select a sheet named `Leads`.
+2. In **Extensions → Apps Script**, add this handler. It appends each accepted lead as a new row and records the timestamp in Google Sheets.
+
+```javascript
+const SPREADSHEET_ID = '1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc';
+const SHEET_NAME = 'Leads';
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const required = [
+      'contactPersonName', 'businessName', 'city', 'district',
+      'state', 'whatsappNumber', 'notes'
+    ];
+    if (required.some((key) => !String(data[key] || '').trim())) {
+      throw new Error('Missing required fields');
+    }
+    const requestType = data.requestType || 'business_enquiry';
+    const requestedDateTime = String(data.requestedDateTime || '').trim();
+    if (!['business_enquiry', 'booking_request'].includes(requestType)) {
+      throw new Error('Invalid request type');
+    }
+    const parsedRequestedDateTime = new Date(`${requestedDateTime}:00Z`);
+    if (requestedDateTime && (
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(requestedDateTime) ||
+      Number.isNaN(parsedRequestedDateTime.getTime()) ||
+      parsedRequestedDateTime.toISOString().slice(0, 16) !== requestedDateTime
+    )) {
+      throw new Error('Invalid requested date and time');
+    }
+    if (requestType === 'booking_request' && !requestedDateTime) {
+      throw new Error('Booking requests need a requested date and time');
+    }
+
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) throw new Error('Leads sheet was not found');
+    const headers = [
+      'Timestamp', 'Contact Person Name', 'Restaurant / Business Name',
+      'City', 'District', 'State', 'WhatsApp Number', 'Email Address',
+      'Notes / Requirements', 'Request Type', 'Requested Date and Time'
+    ];
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers);
+    } else {
+      sheet.getRange(1, 10, 1, 2).setValues([headers.slice(9)]);
+    }
+    sheet.appendRow([
+      new Date(),
+      data.contactPersonName,
+      data.businessName,
+      data.city,
+      data.district,
+      data.state,
+      data.whatsappNumber,
+      data.email || '',
+      data.notes,
+      data.requestType || 'business_enquiry',
+      data.requestedDateTime || ''
+    ]);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: 'Unable to save lead' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+3. If the `Leads` sheet already exists, the handler adds the `Request Type` and `Requested Date and Time` headers in columns J and K. Deploy or update the Apps Script as a **Web app**, choose **Execute as me**, and allow access to **Anyone** so the server endpoint can submit public enquiries. Copy the deployment URL ending in `/exec`.
+4. Set that URL as `GOOGLE_APPS_SCRIPT_WEB_APP_URL` in the server environment (including production hosting) and restart/redeploy. Do not use the service-account email as the endpoint or expose private credentials in client code.
+
+The UI reports success only after Apps Script returns `{ "success": true }`; failed submissions leave the form values in place so the visitor can retry.
 
 ### 3. Initialize Database & Seed Demo Data
 ```bash
 # Push schema to SQLite database
 npm run prisma:push
 
-# Seed with Super-Admin, Demo Restaurant (The Olive Bistro), tables, menu, and queues
+# Seed with demo restaurant (The Olive Bistro), tables, menu, and queues
 npm run seed
 ```
 
@@ -151,12 +226,10 @@ Visit: `http://localhost:3000`
 
 | Role | Email | Password | Direct Portal |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@wepass.in` | `AdminPassword123!` | `/admin` |
 | **Restaurant Owner** | `owner@olivebistro.com` | `OwnerPassword123!` | `/dashboard` |
 | **Shift Manager** | `manager@olivebistro.com` | `StaffPassword123!` | `/staff` |
 | **Host Staff** | `staff@olivebistro.com` | `StaffPassword123!` | `/staff` |
 | **Guest QR Experience** | *Public* | *None* | `/r/olive-bistro` |
-| **Guest Live Tracker** | *Public* | *None* | `/queue/A01?slug=olive-bistro` |
 
 ---
 

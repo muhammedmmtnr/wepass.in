@@ -7,13 +7,19 @@ interface BrandLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showSubtitle?: boolean;
+  tone?: 'dark' | 'light';
 }
 
-export default function BrandLogo({ className = '', size = 'md', showSubtitle = false }: BrandLogoProps) {
+export default function BrandLogo({
+  className = '',
+  size = 'md',
+  showSubtitle = false,
+  tone = 'dark',
+}: BrandLogoProps) {
   const sizeMap = {
-    sm: { img: 28, text: 'text-lg', badge: 'text-[9px] px-1.5 py-0.5' },
-    md: { img: 36, text: 'text-2xl', badge: 'text-[10px] px-2 py-0.5' },
-    lg: { img: 48, text: 'text-3xl', badge: 'text-xs px-2.5 py-1' },
+    sm: { img: 28, text: 'text-lg' },
+    md: { img: 36, text: 'text-2xl' },
+    lg: { img: 48, text: 'text-3xl' },
   };
 
   const current = sizeMap[size];
@@ -41,15 +47,12 @@ export default function BrandLogo({ className = '', size = 'md', showSubtitle = 
 
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
-          <span className={`font-extrabold tracking-tight text-slate-900 ${current.text}`}>
-            We<span className="text-wepass-600">Pass</span>
-          </span>
-          <span className={`rounded-full bg-wepass-100 font-semibold text-wepass-700 ${current.badge}`}>
-            PRO
+          <span className={`font-extrabold tracking-tight ${tone === 'light' ? 'text-white' : 'text-slate-900'} ${current.text}`}>
+            We<span className={tone === 'light' ? 'text-wepass-200' : 'text-wepass-600'}>Pass</span>
           </span>
         </div>
         {showSubtitle && (
-          <span className="text-[11px] font-medium text-slate-400 -mt-0.5">
+          <span className={`-mt-0.5 text-[11px] font-medium ${tone === 'light' ? 'text-white/60' : 'text-slate-400'}`}>
             Your Queue. Your Time. Your Table.
           </span>
         )}

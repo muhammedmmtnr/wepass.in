@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthSession } from '@/lib/auth';
+import { requireRestaurantAuth } from '@/lib/auth';
 import { getTableGroupByPartySize, generateNextToken, calculateQueuePosition } from '@/lib/queueEngine';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getAuthSession(req);
     const {
       restaurantId,
       guestName,
@@ -31,10 +30,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
+    const auth = await requireRestaurantAuth(req, restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
+    const session = auth.user!;
+
     const parsedPartySize = parseInt(partySize, 10);
     const tableGroup = getTableGroupByPartySize(parsedPartySize);
     const token = await generateNextToken(restaurantId, tableGroup);
-    const sessionSecret = crypto.randomBytes(16).toString('hex');
+    const sessionSecret = crypto.randomBytes(32).toString('hex');
 
     const entry = await prisma.$transaction(async (tx) => {
       const created = await tx.queueEntry.create({
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
           specialRequests: specialRequests ? specialRequests.trim() : null,
           accessibilityNeeds: Boolean(accessibilityNeeds),
           isManualEntry: true,
-          createdByStaffId: session?.userId || null,
+          createdByStaffId: session.userId,
           sessionSecret,
         },
       });
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
           restaurantId,
           eventType: 'JOINED',
           description: `Front desk staff registered walk-in party of ${parsedPartySize}`,
-          performedByUserId: session?.userId || null,
+          performedByUserId: session.userId,
         },
       });
 
@@ -71,7 +74,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      entry,
+      entry: {
+        id: entry.id,
+        token: entry.token,
+        guestName: entry.guestName,
+        partySize: entry.partySize,
+        status: entry.status,
+        createdAt: entry.createdAt,
+      },
       position: positionInfo.groupPosition,
       estimatedWaitMinutes: positionInfo.estimatedWaitMinutes,
       message: `Walk-in guest registered with token ${entry.token}`,

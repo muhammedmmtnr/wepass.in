@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthSession } from '@/lib/auth';
+import { requireRestaurantAuth } from '@/lib/auth';
 
 export async function PATCH(
   req: NextRequest,
@@ -8,7 +8,6 @@ export async function PATCH(
 ) {
   try {
     const rawParam = params.token;
-    const session = await getAuthSession(req);
     const { status, cancellationReason } = await req.json();
 
     const validStatuses = ['WAITING', 'CALLED', 'CONFIRMED', 'SEATED', 'COMPLETED', 'PAUSED', 'SKIPPED', 'CANCELLED', 'NO_SHOW'];
@@ -25,6 +24,9 @@ export async function PATCH(
     if (!entry) {
       return NextResponse.json({ error: 'Queue entry not found' }, { status: 404 });
     }
+
+    const auth = await requireRestaurantAuth(req, entry.restaurantId);
+    if (auth.errorResponse) return auth.errorResponse;
 
     const updated = await prisma.$transaction(async (tx) => {
       // If setting to NO_SHOW or CANCELLED, release table
@@ -50,7 +52,7 @@ export async function PATCH(
           restaurantId: entry.restaurantId,
           eventType: status,
           description: `Queue status updated to ${status}${cancellationReason ? `: ${cancellationReason}` : ''}`,
-          performedByUserId: session?.userId || null,
+          performedByUserId: auth.user!.userId,
         },
       });
 

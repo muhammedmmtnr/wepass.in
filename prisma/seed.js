@@ -90,26 +90,8 @@ async function main() {
   }
 
   // 2. Users
-  const superAdminPassword = await bcrypt.hash('AdminPassword123!', 10);
   const ownerPassword = await bcrypt.hash('OwnerPassword123!', 10);
   const staffPassword = await bcrypt.hash('StaffPassword123!', 10);
-
-  const superAdmin = await prisma.user.upsert({
-    where: { email: 'admin@wepass.in' },
-    update: {
-      name: 'WePass Super Admin',
-      role: 'SUPER_ADMIN',
-      status: 'ACTIVE',
-    },
-    create: {
-      email: 'admin@wepass.in',
-      passwordHash: superAdminPassword,
-      name: 'WePass Super Admin',
-      phone: '+91 99000 00001',
-      role: 'SUPER_ADMIN',
-      status: 'ACTIVE',
-    },
-  });
 
   const owner = await prisma.user.upsert({
     where: { email: 'owner@olivebistro.com' },
@@ -174,6 +156,7 @@ async function main() {
       email: 'contact@olivebistro.com',
       category: 'Mediterranean & Italian',
       isQueueOpen: true,
+      isDemo: true,
       avgDiningDurationMin: 45,
       maxPartySize: 12,
       estimatedWaitPerPartyMin: 8,
@@ -191,6 +174,7 @@ async function main() {
       email: 'contact@olivebistro.com',
       category: 'Mediterranean & Italian',
       status: 'ACTIVE',
+      isDemo: true,
       isQueueOpen: true,
       avgDiningDurationMin: 45,
       maxPartySize: 12,
@@ -473,7 +457,6 @@ async function main() {
 
   console.log('✅ WePass database seed completed successfully!');
   console.log(`Demo Restaurant: ${restaurant.name} (http://localhost:3000/r/${restaurant.slug})`);
-  console.log(`Super Admin: admin@wepass.in / AdminPassword123!`);
   console.log(`Owner: owner@olivebistro.com / OwnerPassword123!`);
   console.log(`Manager: manager@olivebistro.com / StaffPassword123!`);
   console.log(`Staff: staff@olivebistro.com / StaffPassword123!`);

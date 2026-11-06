@@ -5,17 +5,39 @@
 :root {
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --bg-tint: #E8F3EC;
-  --brand-green: #05A85C;
-  --brand-green-dark: #035831;
-  --brand-amber: #F59E0B;
+  --brand-green: #315F47;
+  --brand-green-dark: #244936;
+  --brand-amber: #E7B65A;
+  --text-primary: #25352C;
+  --text-secondary: #77847B;
+  --border-soft: #E5EAE6;
+  --surface-secondary: #F8FAF8;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
   font-family: var(--font-inter);
-  background-color: #F8FAF9;
-  color: #1E293B;
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 3px;
 }
 
 /* Custom soft scrollbar */
@@ -48,4 +70,15 @@ body {
 
 .animate-soft-pulse {
   animation: softPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
