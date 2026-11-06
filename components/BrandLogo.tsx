@@ -28,7 +28,7 @@ export default function BrandLogo({
     <Link href="/" className={`inline-flex items-center gap-2.5 group ${className}`}>
       <div className="relative flex items-center justify-center rounded-xl bg-gradient-to-tr from-wepass-600 to-wepass-500 shadow-sm shadow-wepass-500/20 p-1.5 transition-transform group-hover:scale-105">
         <svg
-          className="text-white"
+          className="hidden"
           width={current.img - 10}
           height={current.img - 10}
           viewBox="0 0 24 24"
@@ -43,6 +43,13 @@ export default function BrandLogo({
           <path d="M13 17v2" />
           <path d="M13 11v2" />
         </svg>
+        <Image
+          src="/brand/logo-card.png"
+          alt="WePass ticket logo"
+          width={current.img - 10}
+          height={current.img - 10}
+          className="rounded-lg object-cover"
+        />
       </div>
 
       <div className="flex flex-col">

@@ -136,25 +136,25 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => fillCredentials('owner@olivebistro.com', 'OwnerPassword123!')}
-                className="w-full flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-xs text-slate-700 hover:bg-wepass-50 hover:border-wepass-200 transition"
+                className="w-full flex min-w-0 items-center justify-between gap-2 rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-xs text-slate-700 hover:bg-wepass-50 hover:border-wepass-200 transition"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <Store className="h-4 w-4 text-wepass-600" />
-                  <span className="font-bold text-slate-900">Restaurant Owner</span>
+                  <span className="truncate font-bold text-slate-900">Restaurant Owner</span>
                 </div>
-                <span className="text-[10px] text-slate-400">owner@olivebistro.com</span>
+                <span className="shrink-0 text-[10px] text-slate-400">owner@olivebistro.com</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillCredentials('staff@olivebistro.com', 'StaffPassword123!')}
-                className="w-full flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-xs text-slate-700 hover:bg-amber-50 hover:border-amber-200 transition"
+                className="w-full flex min-w-0 items-center justify-between gap-2 rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-xs text-slate-700 hover:bg-amber-50 hover:border-amber-200 transition"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <Users className="h-4 w-4 text-amber-600" />
-                  <span className="font-bold text-slate-900">Host / Staff</span>
+                  <span className="truncate font-bold text-slate-900">Host / Staff</span>
                 </div>
-                <span className="text-[10px] text-slate-400">staff@olivebistro.com</span>
+                <span className="shrink-0 text-[10px] text-slate-400">staff@olivebistro.com</span>
               </button>
 
             </div>

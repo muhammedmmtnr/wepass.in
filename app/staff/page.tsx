@@ -294,39 +294,40 @@ export default function StaffQueueDashboard() {
     <div className="min-h-screen bg-[#F0F5F2] text-slate-800">
       {/* Top Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 md:px-8 py-3 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-4">
             <BrandLogo size="sm" />
             <div className="hidden sm:block h-5 w-px bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-wepass-800 bg-wepass-100 px-2.5 py-1 rounded-lg">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="hidden rounded-lg bg-wepass-100 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-wepass-800 sm:inline-flex">
                 Staff Host Desk
               </span>
-              <span className="text-sm font-extrabold text-slate-800">
+              <span className="truncate text-sm font-extrabold text-slate-800">
                 {restaurant?.name || 'The Olive Bistro'}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-3">
             <button
               onClick={() => setWalkinModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-xl bg-wepass-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-wepass-700 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-wepass-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-wepass-700 sm:px-3.5"
             >
               <Plus className="h-4 w-4" /> Add Walk-in
             </button>
             <Link
               href="/dashboard"
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl px-3 py-2 transition"
+              className="text-xs font-semibold text-slate-600 transition hover:text-slate-900 border border-slate-200 rounded-xl px-3 py-2"
             >
-              Owner Portal
+              <span className="sm:hidden">Owner</span>
+              <span className="hidden sm:inline">Owner Portal</span>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      <main className="mx-auto min-w-0 max-w-7xl space-y-6 p-4 md:p-8">
         {/* Real-time KPI Bar */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -389,9 +390,10 @@ export default function StaffQueueDashboard() {
         )}
 
         {/* Tab & Filter Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-3.5 rounded-2xl shadow-subtle border border-slate-200">
+        <div className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-subtle md:flex-row md:items-center">
           {/* Main Navigation Tabs */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 md:pb-0">
+          <div className="w-full min-w-0 max-w-full overflow-x-auto pb-1 md:pb-0">
+            <div className="flex w-max min-w-full gap-1.5">
             <button
               onClick={() => setActiveTab('live')}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition flex items-center gap-2 shrink-0 ${
@@ -433,15 +435,16 @@ export default function StaffQueueDashboard() {
             >
               <RotateCcw className="h-4 w-4" /> History
             </button>
+            </div>
           </div>
 
           {/* Group and Search Filters */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row md:w-auto">
             {/* Table Group Filter */}
             <select
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-wepass-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-wepass-500 sm:w-auto"
             >
               <option value="all">All Party Groups</option>
               <option value="A">Group A (1-2 Guests)</option>
@@ -451,14 +454,14 @@ export default function StaffQueueDashboard() {
             </select>
 
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative min-w-0 flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search token or name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-wepass-500 w-44"
+                className="w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-wepass-500"
               />
             </div>
           </div>
