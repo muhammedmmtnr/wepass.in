@@ -36,14 +36,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body: unknown = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Please submit valid form details.' }, { status: 400 });
+    }
+
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return NextResponse.json({ error: 'Please submit valid form details.' }, { status: 400 });
     }
 
     const formData = body as Record<string, unknown>;
     const requestType = formData.requestType === undefined ? 'business_enquiry' : formData.requestType;
-    if (requestType !== 'business_enquiry' && requestType !== 'booking_request') {
+    if (
+      requestType !== 'business_enquiry' &&
+      requestType !== 'booking_request' &&
+      requestType !== 'demo_booking'
+    ) {
       return NextResponse.json({ error: 'Please choose a valid request type.' }, { status: 400 });
     }
 
@@ -87,7 +97,7 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json({ error: 'Please enter a valid requested date and time.' }, { status: 400 });
     }
-    if (requestType === 'booking_request' && !requestedDateTime) {
+    if ((requestType === 'booking_request' || requestType === 'demo_booking') && !requestedDateTime) {
       return NextResponse.json(
         { error: 'Choose a requested date and time for your booking request.' },
         { status: 400 }
@@ -126,7 +136,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result: unknown = await response.json();
+    const responseBody = await response.text();
+    let result: unknown;
+    try {
+      result = JSON.parse(responseBody);
+    } catch {
+      console.error('Google Apps Script returned a non-JSON response.');
+      return NextResponse.json(
+        { error: 'We could not confirm that your details were saved. Please try again.' },
+        { status: 502 }
+      );
+    }
+
     if (
       !result ||
       typeof result !== 'object' ||

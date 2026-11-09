@@ -113,7 +113,7 @@ GOOGLE_APPS_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/YOUR_DEPLOYME
 
 ### Business lead collection to Google Sheets
 
-The public business enquiry form is available at `/business-registration`. Visitors can send a business enquiry or submit a booking request with a requested date and time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. The spreadsheet URL by itself is not a submission endpoint.
+The public business enquiry and demo booking form is available at `/business-registration`. Visitors can send a business enquiry or book a demo with a requested date and time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. Demo bookings are stored with the request type `demo_booking`. The spreadsheet URL by itself is not a submission endpoint.
 
 1. Open the supplied spreadsheet with ID `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc` and create or select a sheet named `Leads`.
 2. In **Extensions → Apps Script**, add this handler. It appends each accepted lead as a new row and records the timestamp in Google Sheets.
@@ -134,7 +134,7 @@ function doPost(e) {
     }
     const requestType = data.requestType || 'business_enquiry';
     const requestedDateTime = String(data.requestedDateTime || '').trim();
-    if (!['business_enquiry', 'booking_request'].includes(requestType)) {
+    if (!['business_enquiry', 'booking_request', 'demo_booking'].includes(requestType)) {
       throw new Error('Invalid request type');
     }
     const parsedRequestedDateTime = new Date(`${requestedDateTime}:00Z`);
@@ -145,8 +145,8 @@ function doPost(e) {
     )) {
       throw new Error('Invalid requested date and time');
     }
-    if (requestType === 'booking_request' && !requestedDateTime) {
-      throw new Error('Booking requests need a requested date and time');
+    if (['booking_request', 'demo_booking'].includes(requestType) && !requestedDateTime) {
+      throw new Error('Bookings need a requested date and time');
     }
 
     const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);

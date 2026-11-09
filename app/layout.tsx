@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: 'WePass — Your Queue. Your Time. Your Table.',
   description: 'Premium restaurant queue and table management platform.',
   icons: {
-    icon: '/brand/logo-card.svg',
-    apple: '/brand/logo-card.svg',
+    icon: '/brand/wepass-icon.png',
+    apple: '/brand/wepass-icon.png',
   },
   manifest: '/manifest.json',
 };
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#315F47',
+  themeColor: '#079F61',
 };
 
 export default function RootLayout({

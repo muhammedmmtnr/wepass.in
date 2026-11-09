@@ -56,7 +56,7 @@ export default function BusinessRegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [submittedAsBooking, setSubmittedAsBooking] = useState(false);
+  const [submittedAsDemo, setSubmittedAsDemo] = useState(false);
 
   const updateField = (field: keyof LeadForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -67,8 +67,8 @@ export default function BusinessRegistrationPage() {
     setError('');
 
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const isBookingRequest =
-      submitter instanceof HTMLButtonElement && submitter.value === 'booking_request';
+    const isDemoBooking =
+      submitter instanceof HTMLButtonElement && submitter.value === 'demo_booking';
 
     const missingField = requiredFields.find((field) => !form[field].trim());
     if (missingField) {
@@ -76,8 +76,8 @@ export default function BusinessRegistrationPage() {
       return;
     }
 
-    if (isBookingRequest && !form.requestedDateTime) {
-      setError('Choose a requested date and time for your booking request.');
+    if (isDemoBooking && !form.requestedDateTime) {
+      setError('Choose a requested date and time for your demo.');
       return;
     }
 
@@ -104,7 +104,7 @@ export default function BusinessRegistrationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          requestType: isBookingRequest ? 'booking_request' : 'business_enquiry',
+          requestType: isDemoBooking ? 'demo_booking' : 'business_enquiry',
         }),
       });
       const result = await response.json();
@@ -115,7 +115,7 @@ export default function BusinessRegistrationPage() {
       }
 
       setForm(initialForm);
-      setSubmittedAsBooking(isBookingRequest);
+      setSubmittedAsDemo(isDemoBooking);
       setSubmitted(true);
     } catch (submitError) {
       console.error('Business registration request failed:', submitError);
@@ -158,12 +158,12 @@ export default function BusinessRegistrationPage() {
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#079F61]" />
                 <div>
                   <p className="font-bold">
-                    {submittedAsBooking
-                      ? 'Thanks — your booking request has been saved.'
+                    {submittedAsDemo
+                      ? 'Thanks — your demo request has been saved.'
                       : 'Thanks — your details have been saved.'}
                   </p>
                   <p className="mt-1">
-                    {submittedAsBooking
+                    {submittedAsDemo
                       ? 'The WE PASS team will follow up to confirm your requested time.'
                       : 'The WE PASS team will follow up with you.'}
                   </p>
@@ -262,11 +262,11 @@ export default function BusinessRegistrationPage() {
                 <button
                   type="submit"
                   name="requestType"
-                  value="booking_request"
+                  value="demo_booking"
                   disabled={submitting}
                   className="w-full rounded-xl bg-[#079F61] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#067f4e] focus:outline-none focus:ring-2 focus:ring-[#079F61] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  {submitting ? 'Submitting…' : 'Book request'}
+                  {submitting ? 'Submitting…' : 'Book a demo'}
                 </button>
               </div>
             </form>

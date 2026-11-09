@@ -316,7 +316,7 @@ export default function HomePage() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <main className="overflow-hidden bg-white text-[#25352C]">
+    <main id="top" className="overflow-hidden bg-white text-[#25352C]">
       <header className="sticky top-0 z-50 border-b border-[#E5EAE6]/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <BrandLogo size="md" />
@@ -379,7 +379,7 @@ export default function HomePage() {
         )}
       </header>
 
-      <section className="relative isolate bg-[#F8FAF8]">
+      <section id="about" className="relative isolate bg-[#F8FAF8]">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_72%_38%,rgba(232,243,236,0.9),transparent_42%)]" />
         <div className="mx-auto grid min-h-[680px] max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
           <div className="max-w-2xl">
@@ -686,25 +686,74 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-[#064D33] text-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex flex-col justify-between gap-10 border-b border-white/10 pb-10 md:flex-row">
+      <footer className="bg-[#080D0A] text-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="grid gap-10 border-b border-white/10 pb-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-12">
             <div>
               <BrandLogo size="md" tone="light" />
-              <p className="mt-4 max-w-xs text-sm leading-6 text-white/60">Your queue. Your time. Your table.</p>
+              <h2 className="mt-6 text-xl font-bold tracking-tight">Your Time Matters.</h2>
+              <p className="mt-3 max-w-sm text-sm leading-7 text-white/60">
+                Wepass is a smart digital queue management platform that helps businesses manage customer queues efficiently while allowing customers to join queues online and track their waiting position in real time.
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-x-14 gap-y-4 text-sm sm:grid-cols-3">
-              <a href="#product" className="text-white/70 hover:text-white">Product</a>
-              <a href="#how-it-works" className="text-white/70 hover:text-white">How it works</a>
-              <a href="#faq" className="text-white/70 hover:text-white">FAQ</a>
-              <Link href="/business-registration" className="text-white/70 hover:text-white">Restaurant enquiry</Link>
-              <Link href="/login" className="text-white/70 hover:text-white">Sign in</Link>
-              <Link href="/register" className="text-white/70 hover:text-white">Create account</Link>
+
+            <nav aria-label="Footer quick links">
+              <h3 className="text-sm font-bold text-white">Quick Links</h3>
+              <ul className="mt-5 space-y-3 text-sm">
+                {[
+                  ['Home', '/'],
+                  ['About Us', '#about'],
+                  ['Features', '#product'],
+                  ['For Businesses', '#restaurants'],
+                  ['Contact Us', '#contact'],
+                ].map(([label, href]) => (
+                  <li key={label}>
+                    <a href={href} className="text-white/60 transition hover:text-[#6BE3A8]">{label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div>
+              <h3 className="text-sm font-bold text-white">Connect With Us</h3>
+              <ul className="mt-5 space-y-3 text-sm text-white/60">
+                {['Instagram', 'Facebook', 'LinkedIn', 'X (Twitter)'].map((social) => (
+                  <li key={social}>{social}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div id="contact">
+              <h3 className="text-sm font-bold text-white">24/7 WhatsApp Support</h3>
+              <a
+                href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-block text-xl font-bold tracking-tight text-[#6BE3A8] transition hover:text-white"
+              >
+                +91 74064 00140
+              </a>
+              <p className="mt-2 text-sm leading-6 text-white/60">We&apos;re here to help you. Contact our support team anytime.</p>
+              <a
+                href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex text-sm font-semibold text-white transition hover:text-[#6BE3A8]"
+              >
+                Chat with WE PASS on WhatsApp <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
             </div>
           </div>
-          <div className="flex flex-col gap-2 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 WePass. Thoughtful queue management for restaurants.</p>
-            <p>Built for better guest experiences.</p>
+
+          <div className="flex flex-col gap-5 pt-7 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-white/80">Skip the Wait. Enjoy the Moment.</p>
+              <p className="mt-2">© 2026 WE PASS. All Rights Reserved. <span className="mx-2 text-white/25">|</span> Website: wepass.in</p>
+            </div>
+            <div className="flex gap-5">
+              <span>Privacy Policy</span>
+              <span>Terms &amp; Conditions</span>
+            </div>
           </div>
         </div>
       </footer>

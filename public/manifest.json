@@ -5,12 +5,12 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#E8F3EC",
-  "theme_color": "#05A85C",
+  "theme_color": "#079F61",
   "icons": [
     {
-      "src": "/brand/logo-card.svg",
+      "src": "/brand/wepass-icon.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
