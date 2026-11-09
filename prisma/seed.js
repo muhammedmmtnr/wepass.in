@@ -165,7 +165,7 @@ async function main() {
     create: {
       name: 'The Olive Bistro',
       slug: 'olive-bistro',
-      logoUrl: '/brand/logo-card.png',
+      logoUrl: '/brand/logo-card.svg',
       bannerUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80',
       address: '142 Indiranagar 100ft Road',
       city: 'Bengaluru',

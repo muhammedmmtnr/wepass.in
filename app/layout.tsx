@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: 'WePass — Your Queue. Your Time. Your Table.',
   description: 'Premium restaurant queue and table management platform.',
   icons: {
-    icon: '/brand/logo-card.png',
-    apple: '/brand/logo-card.png',
+    icon: '/brand/logo-card.svg',
+    apple: '/brand/logo-card.svg',
   },
   manifest: '/manifest.json',
 };

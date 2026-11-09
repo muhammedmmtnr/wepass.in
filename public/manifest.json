@@ -8,9 +8,9 @@
   "theme_color": "#05A85C",
   "icons": [
     {
-      "src": "/brand/logo-card.png",
+      "src": "/brand/logo-card.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

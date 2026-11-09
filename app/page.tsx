@@ -58,6 +58,233 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [proofStats, setProofStats] = useState<ProofStats | null>(null);
   const [proofError, setProofError] = useState(false);
+  const [activePhoneScreen, setActivePhoneScreen] = useState(0);
+
+  const phoneJourney = [
+    {
+      key: 'join',
+      title: 'Join the Queue',
+      blurb: 'Tell us a few details and we’ll add you to the queue.',
+      accentLabel: 'Queue joined',
+      accentText: 'Your place is saved',
+      screen: (
+        <div className="space-y-5">
+          <div className="flex items-center gap-3 rounded-2xl bg-white/80 p-3 shadow-[inset_0_0_0_1px_rgba(15,23,42,0.05)]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E7F9F0] text-[#067F4E] shadow-inner">
+              <Smartphone className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Okey fine</p>
+              <p className="truncate text-sm font-bold text-[#0F172A]">The New Mytro App is coming.</p>
+            </div>
+          </div>
+
+          <div className="space-y-1 border-b border-[#D9E4DE] pb-4">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#4B625A]">You’re joining</p>
+            <h3 className="text-[27px] font-black leading-none tracking-[-0.06em] text-[#0F172A]">Test restaurant</h3>
+            <p className="text-base text-[#4B625A]">Testing only</p>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-xl border border-[#D9E4DE] bg-white/60 px-3 py-2.5 text-sm text-[#3C4D47]">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#8AA89D] text-[#0B6F52]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0B6F52]" />
+            </span>
+            Address not provided
+          </div>
+
+          <div className="space-y-3 pt-1">
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-[#0F172A]">Your name <span className="text-[#E57373]">*</span></span>
+              <input value="Rahul, Sarah, etc." readOnly className="w-full rounded-2xl border border-[#D8E2DC] bg-white px-4 py-3 text-base text-[#5D6C66] placeholder:text-[#7A8A84]" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-[#0F172A]">Party size</span>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((size, index) => (
+                  <button type="button" key={size} className={`rounded-2xl border px-3 py-2.5 text-lg font-bold ${index === 0 ? 'border-[#0B6F52] bg-[#0B6F52] text-white' : 'border-[#D8E2DC] bg-white text-[#0F172A]'}`}>
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </label>
+            <button type="button" className="mt-1 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#0B6F52] px-5 py-3.5 text-lg font-bold text-white shadow-[0_12px_28px_rgba(11,111,82,0.28)]">
+              <ArrowRight className="h-5 w-5" />
+              Confirm & Join Queue
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'confirm',
+      title: 'You’re in the queue!',
+      blurb: 'Thanks for joining. Keep this page open to follow your place in line.',
+      accentLabel: 'Live queue',
+      accentText: 'Follow your place',
+      screen: (
+        <div className="space-y-5 pb-2">
+          <div className="mx-auto mt-2 flex h-24 w-24 items-center justify-center rounded-full bg-[#DDF5E8] text-[#0B6F52] shadow-[inset_0_0_0_1px_rgba(30,119,94,0.12)]">
+            <Check className="h-12 w-12" />
+          </div>
+          <h3 className="text-center text-[30px] font-black tracking-[-0.06em] text-[#0F172A]">You’re in the queue!</h3>
+          <p className="text-center text-base text-[#4B625A]">Thanks for joining. Keep this page open to follow your place in line.</p>
+          <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-[#D8E2DC] bg-white/60">
+            <div className="border-r border-[#D8E2DC] p-4">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#4B625A]">Queue token</p>
+              <p className="mt-2 text-[26px] font-black tracking-[-0.06em] text-[#0F172A]">GP-3277EF</p>
+            </div>
+            <div className="p-4">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#4B625A]">Parties ahead</p>
+              <div className="mt-2 text-[26px] font-black tracking-[-0.06em] text-[#0F172A]">0</div>
+              <p className="text-xs text-[#4B625A]">approx.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3 pt-2 text-center">
+            <div className="rounded-2xl border border-[#D8E2DC] bg-white/60 p-3">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#E7F9F0] text-[#0B6F52]">
+                <Armchair className="h-5 w-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Table</p>
+              <p className="mt-1 text-sm font-bold text-[#0F172A]">When ready</p>
+            </div>
+            <div className="rounded-2xl border border-[#D8E2DC] bg-white/60 p-3">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#E7F9F0] text-[#0B6F52]">
+                <UsersRound className="h-5 w-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Party size</p>
+              <p className="mt-1 text-sm font-bold text-[#0F172A]">8 people</p>
+            </div>
+            <div className="rounded-2xl border border-[#D8E2DC] bg-white/60 p-3">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#E7F9F0] text-[#0B6F52]">
+                <Clock3 className="h-5 w-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Joined at</p>
+              <p className="mt-1 text-sm font-bold text-[#0F172A]">1:41 AM</p>
+            </div>
+          </div>
+          <button type="button" className="w-full rounded-2xl border border-[#E7B7B7] bg-[#F5E2E2] px-4 py-3 text-xl font-bold text-[#9B5A5A]">
+            Leave queue
+          </button>
+        </div>
+      ),
+    },
+    {
+      key: 'ready',
+      title: 'Your table is ready!',
+      blurb: 'Please make your way to the restaurant.',
+      accentLabel: 'Your table is ready!',
+      accentText: 'Head to the restaurant',
+      screen: (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-[#D8E2DC] bg-[#E1F5EC] p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0B6F52] text-white">
+                <BellRing className="h-7 w-7" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[25px] font-black tracking-[-0.05em] text-[#0F172A]">Your table is ready</h3>
+                <p className="mt-1 text-base text-[#3C4D47]">Please make your way to Test restaurant.</p>
+              </div>
+              <span className="text-xl font-black text-[#0F172A]">×</span>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-3 flex h-28 w-28 items-center justify-center rounded-full bg-[#DDF5E8] text-[#0B6F52] shadow-[inset_0_0_0_1px_rgba(30,119,94,0.12)]">
+            <Armchair className="h-14 w-14" />
+          </div>
+
+          <div className="text-center">
+            <h3 className="text-[32px] font-black tracking-[-0.06em] text-[#0F172A]">Your table is ready!</h3>
+            <p className="mt-3 text-lg text-[#4B625A]">Great news! Your table is ready. Please make your way to the restaurant and take your seat.</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[#D8E2DC] bg-white/60 p-3">
+            <div className="rounded-xl border border-[#D8E2DC] bg-white/50 p-3">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Queue token</p>
+              <p className="mt-2 text-xl font-black tracking-[-0.06em] text-[#0F172A]">GP-3277EF</p>
+            </div>
+            <div className="rounded-xl border border-[#D8E2DC] bg-white/50 p-3">
+              <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#E7F9F0] text-[#0B6F52]">
+                <UsersRound className="h-5 w-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Party size</p>
+              <p className="mt-1 text-lg font-black text-[#0F172A]">8</p>
+            </div>
+            <div className="rounded-xl border border-[#D8E2DC] bg-white/50 p-3">
+              <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#E7F9F0] text-[#0B6F52]">
+                <Clock3 className="h-5 w-5" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#4B625A]">Time ready</p>
+              <p className="mt-1 text-lg font-black text-[#0F172A]">1:41 AM</p>
+            </div>
+          </div>
+
+          <button type="button" className="flex w-full items-center justify-center gap-3 rounded-full bg-[#0B6F52] px-5 py-4 text-2xl font-black text-white shadow-[0_14px_32px_rgba(11,111,82,0.28)]">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/30 bg-white/10">
+              <ArrowRight className="h-5 w-5" />
+            </span>
+            I’m Coming
+          </button>
+          <div className="flex items-center justify-center gap-2 text-base text-[#4B625A]">
+            <Clock3 className="h-4 w-4 text-[#0B6F52]" />
+            Please arrive within 10 minutes.
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'coming',
+      title: 'I’m coming',
+      blurb: 'Please arrive within 10 minutes.',
+      accentLabel: 'It’s your turn',
+      accentText: 'Head to the restaurant',
+      screen: (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-[#D8E2DC] bg-[#EAF5F0] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0B6F52] text-white">
+                  <BellRing className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[12px] uppercase tracking-[0.14em] text-[#4B625A]">Your table is ready</p>
+                  <p className="text-lg font-bold text-[#0F172A]">Please make your way to Test restaurant.</p>
+                </div>
+              </div>
+              <span className="text-xl font-black text-[#0F172A]">×</span>
+            </div>
+          </div>
+
+          <div className="rounded-[30px] border border-[#D8E2DC] bg-white/60 p-4">
+            <div className="flex items-center justify-between">
+              <div className="inline-block rounded-full border border-[#D8E2DC] bg-[#EAF5F0] px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#0B6F52]">Help</div>
+              <div className="inline-block rounded-full border border-[#D8E2DC] bg-[#EAF5F0] px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#0B6F52]">Live</div>
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[14px] uppercase tracking-[0.14em] text-[#4B625A]">Need help?</p>
+                <p className="mt-2 text-xl font-bold text-[#0F172A]">Chat now</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0B6F52] text-white">
+                <Smartphone className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          <button type="button" className="flex w-full items-center justify-center gap-3 rounded-full bg-[#0B6F52] px-5 py-4 text-2xl font-black text-white shadow-[0_14px_32px_rgba(11,111,82,0.28)]">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/30 bg-white/10">
+              <ArrowRight className="h-5 w-5" />
+            </span>
+            I’m Coming
+          </button>
+          <div className="flex items-center justify-center gap-2 text-base text-[#4B625A]">
+            <Clock3 className="h-4 w-4 text-[#0B6F52]" />
+            Please arrive within 10 minutes.
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -76,8 +303,15 @@ export default function HomePage() {
         setProofError(true);
       });
 
-    return () => controller.abort();
-  }, []);
+    const screenTimer = window.setInterval(() => {
+      setActivePhoneScreen((current) => (current + 1) % phoneJourney.length);
+    }, 2600);
+
+    return () => {
+      controller.abort();
+      window.clearInterval(screenTimer);
+    };
+  }, [phoneJourney.length]);
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -105,7 +339,7 @@ export default function HomePage() {
               Sign in
             </Link>
             <Link href="/business-registration" className="rounded-full bg-[#079F61] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#067F4E]">
-              Request access
+              Book Demo
             </Link>
           </div>
 
@@ -137,7 +371,7 @@ export default function HomePage() {
                   Sign in
                 </Link>
                 <Link href="/business-registration" onClick={closeMenu} className="rounded-full bg-[#079F61] px-4 py-3 text-center text-sm font-semibold text-white">
-                  Request access
+                  Book Demo
                 </Link>
               </div>
             </div>
@@ -176,71 +410,47 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[500px] py-8">
-            <div className="absolute left-2 top-20 z-10 hidden -rotate-6 rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_18px_48px_rgba(32,57,40,0.12)] backdrop-blur sm:block">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#067F4E]">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DDF5E8]"><Check className="h-4 w-4" /></span>
-                Queue joined
+          <div className="relative mx-auto w-full max-w-[560px] py-8">
+            {[
+              { label: 'Queue joined', detail: 'Your place is saved', className: 'left-2 top-16 -rotate-6', icon: <Check className="h-4 w-4" />, tone: 'text-[#067F4E]' },
+              { label: 'Live queue', detail: 'Follow your place', className: 'right-3 top-20 rotate-3', icon: <BellRing className="h-4 w-4 text-[#C9A858]" />, tone: 'text-[#25352C]' },
+              { label: 'Your table is ready!', detail: 'Head to the restaurant', className: 'left-1 bottom-14 -rotate-2', icon: <BellRing className="h-4 w-4 text-[#067F4E]" />, tone: 'text-[#067F4E]' },
+              { label: 'It’s your turn', detail: 'Please arrive within 10 minutes', className: 'right-0 bottom-16 rotate-2', icon: <Clock3 className="h-4 w-4 text-[#067F4E]" />, tone: 'text-[#25352C]' },
+            ].map((note) => (
+              <div key={note.label} className={`absolute z-10 hidden rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_18px_48px_rgba(32,57,40,0.12)] backdrop-blur sm:block ${note.className}`}>
+                <div className={`flex items-center gap-2 text-xs font-semibold ${note.tone}`}>
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DDF5E8]">{note.icon}</span>
+                  {note.label}
+                </div>
+                <p className="mt-1 pl-9 text-[11px] text-[#77847B]">{note.detail}</p>
               </div>
-              <p className="mt-1 pl-9 text-[11px] text-[#77847B]">Your place is saved</p>
-            </div>
-            <div className="absolute -right-1 bottom-24 z-10 hidden rotate-3 rounded-2xl border border-white/80 bg-white/90 p-4 shadow-[0_18px_48px_rgba(32,57,40,0.12)] backdrop-blur sm:block">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#25352C]">
-                <BellRing className="h-4 w-4 text-[#C9A858]" /> Table almost ready
-              </div>
-              <p className="mt-1 pl-6 text-[11px] text-[#77847B]">A clear call when it’s your turn</p>
-            </div>
+            ))}
 
-            <div className="mx-auto w-[min(100%,310px)] rounded-[2.8rem] border-[7px] border-[#064D33] bg-[#064D33] p-2 shadow-[0_38px_100px_rgba(6,77,51,0.22)]">
-              <div className="overflow-hidden rounded-[2.2rem] bg-[#F8FAF8]">
-                <div className="flex h-8 items-center justify-center bg-[#064D33]">
-                  <div className="h-4 w-20 rounded-full bg-black/70" />
+            <div className="animate-[float_7s_ease-in-out_infinite] mx-auto w-[min(100%,360px)] rounded-[2.9rem] border-[7px] border-[#064D33] bg-[#064D33] p-2 shadow-[0_40px_100px_rgba(6,77,51,0.25)]">
+              <div className="overflow-hidden rounded-[2.2rem] bg-[#EEF6F1]">
+                <div className="flex h-9 items-center justify-center bg-[#064D33]">
+                  <div className="h-3.5 w-24 rounded-full bg-white/10" />
                 </div>
-                <div className="px-5 pb-6 pt-3">
-                  <div className="flex items-center justify-between">
-                    <BrandLogo size="sm" />
-                    <span className="rounded-full bg-[#DDF5E8] px-2.5 py-1 text-[9px] font-bold text-[#067F4E]">PREVIEW</span>
-                  </div>
-                  <div className="mt-6 overflow-hidden rounded-2xl bg-[#079F61] p-4 text-white">
-                    <p className="text-[10px] font-medium text-white/70">A more relaxed wait</p>
-                    <h2 className="mt-1 text-lg font-bold tracking-tight">Your place, in your pocket.</h2>
-                    <div className="mt-5 flex items-end justify-between">
-                      <div>
-                        <p className="text-[9px] uppercase tracking-[0.12em] text-white/60">Queue token</p>
-                        <p className="mt-1 font-mono text-3xl font-bold tracking-tight">A— —</p>
+                <div className="px-4 pb-5 pt-3">
+                  <div className="mb-3 flex items-center justify-between gap-3 rounded-full bg-white/70 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(28,52,42,0.04)]">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#DDF5E8] text-[#0B6F52]">
+                        <Smartphone className="h-4 w-4" />
                       </div>
-                      <div className="rounded-full border border-white/25 px-2.5 py-1 text-[9px] font-semibold text-white/85">Product preview</div>
+                      <div className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[#3B5A4E]">WePass</div>
                     </div>
+                    <div className="rounded-full bg-[#DDF5E8] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[#067F4E]">Live</div>
                   </div>
-                  <div className="mt-3 rounded-2xl border border-[#E5EAE6] bg-white p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] font-semibold text-[#77847B]">LIVE QUEUE</p>
-                        <p className="mt-1 text-sm font-bold text-[#25352C]">Follow your place</p>
-                      </div>
-                      <span className="h-2 w-2 rounded-full bg-[#079F61] shadow-[0_0_0_4px_#DDF5E8]" />
-                    </div>
-                    <div className="mt-4 flex items-center gap-3">
-                      {[0, 1, 2, 3].map((step) => (
-                        <div key={step} className={`h-1.5 flex-1 rounded-full ${step === 0 ? 'bg-[#079F61]' : 'bg-[#E5EAE6]'}`} />
-                      ))}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between text-[10px]">
-                      <span className="text-[#77847B]">A clear update when it’s your turn</span>
-                      <Clock3 className="h-3.5 w-3.5 text-[#079F61]" />
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center gap-3 rounded-xl bg-[#DDF5E8] p-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#079F61]"><QrCode className="h-4 w-4" /></div>
-                    <div>
-                      <p className="text-[10px] font-bold text-[#25352C]">Scan. Join. Wander.</p>
-                      <p className="mt-0.5 text-[9px] text-[#77847B]">No app download needed</p>
+
+                  <div className="relative min-h-[510px] overflow-hidden rounded-[2rem] border border-[#D7E2DB] bg-[#F3F8F4] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)]">
+                    <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#ECF7F1] to-transparent" />
+                    <div className="relative z-10 h-full">
+                      {phoneJourney[activePhoneScreen].screen}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <p className="mt-5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-[#77847B]">Illustrative product preview</p>
           </div>
         </div>
       </section>
@@ -445,7 +655,7 @@ export default function HomePage() {
             </div>
             <div className="mt-8 flex shrink-0 flex-col gap-3 sm:flex-row lg:mt-0 lg:flex-col">
               <Link href="/business-registration" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#079F61] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#067F4E]">
-                Request access <ArrowRight className="h-4 w-4" />
+                Book Demo <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/register" className="inline-flex items-center justify-center rounded-full border border-[#B8EBD0] bg-white/70 px-6 py-3.5 text-sm font-semibold text-[#067F4E] transition hover:bg-white">
                 Create an account
