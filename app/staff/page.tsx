@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   Clock,
@@ -22,7 +23,6 @@ import {
   Filter,
   ShieldAlert,
   ChevronRight,
-  LogOut,
   SlidersHorizontal,
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
@@ -30,12 +30,14 @@ import QueueStatusBadge from '@/components/QueueStatusBadge';
 import FairnessModal from '@/components/FairnessModal';
 
 export default function StaffQueueDashboard() {
+  const router = useRouter();
   const [restaurantId, setRestaurantId] = useState<string>('');
   const [restaurant, setRestaurant] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [entries, setEntries] = useState<any[]>([]);
   const [tables, setTables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [queueError, setQueueError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'live' | 'seated' | 'tables' | 'history'>('live');
@@ -58,36 +60,35 @@ export default function StaffQueueDashboard() {
   const [walkinRequests, setWalkinRequests] = useState('');
   const [walkinSubmitting, setWalkinSubmitting] = useState(false);
 
-  // Initialize: load staff session or default to demo restaurant
   useEffect(() => {
     async function initStaff() {
       try {
         setLoading(true);
-        // Check current session
         const authRes = await fetch('/api/auth/me');
         const authData = await authRes.json();
-        let targetRestId = authData?.user?.currentRestaurant?.id;
+        if (!authRes.ok || !authData.authenticated || !authData.user) {
+          router.replace('/login');
+          return;
+        }
 
+        const targetRestId = authData.user.currentRestaurant?.id;
         if (!targetRestId) {
-          // Fallback to seeded demo restaurant "The Olive Bistro"
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          targetRestId = restData?.restaurant?.id;
+          setQueueError('This account is not associated with a restaurant.');
+          return;
         }
 
-        if (targetRestId) {
-          setRestaurantId(targetRestId);
-          await loadQueueData(targetRestId);
-        }
-      } catch (err) {
-        console.error('Failed to init staff:', err);
+        setRestaurantId(targetRestId);
+        await loadQueueData(targetRestId);
+      } catch (error) {
+        console.error('Failed to initialize the staff queue desk:', error);
+        setQueueError('We could not load your restaurant queue. Please try again.');
       } finally {
         setLoading(false);
       }
     }
 
     initStaff();
-  }, []);
+  }, [router]);
 
   // Poll live queue every 4 seconds
   useEffect(() => {
@@ -103,13 +104,15 @@ export default function StaffQueueDashboard() {
     try {
       const res = await fetch(`/api/restaurants/${restId}/queue?view=all`);
       const data = await res.json();
-      if (res.ok) {
-        setRestaurant(data.restaurant);
-        setStats(data.stats);
-        setTables(data.tables || []);
-        setEntries(data.entries || []);
-      }
-    } catch (e) {
+      if (!res.ok) throw new Error(data.error || 'Unable to load the queue.');
+      setQueueError('');
+      setRestaurant(data.restaurant);
+      setStats(data.stats);
+      setTables(data.tables || []);
+      setEntries(data.entries || []);
+    } catch (error) {
+      console.error('Staff queue request failed:', error);
+      setQueueError(error instanceof Error ? error.message : 'Unable to load the queue.');
     } finally {
       if (showSpinner) setLoading(false);
     }
@@ -303,14 +306,16 @@ export default function StaffQueueDashboard() {
                 Staff Host Desk
               </span>
               <span className="truncate text-sm font-extrabold text-slate-800">
-                {restaurant?.name || 'The Olive Bistro'}
+                {restaurant?.name ?? 'Restaurant queue'}
               </span>
             </div>
           </div>
 
           <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-3">
             <button
+              type="button"
               onClick={() => setWalkinModalOpen(true)}
+              disabled={!restaurantId || loading}
               className="flex items-center gap-1.5 rounded-xl bg-wepass-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-wepass-700 sm:px-3.5"
             >
               <Plus className="h-4 w-4" /> Add Walk-in
@@ -328,6 +333,19 @@ export default function StaffQueueDashboard() {
 
       {/* Main Content Area */}
       <main className="mx-auto min-w-0 max-w-7xl space-y-6 p-4 md:p-8">
+        {queueError && (
+          <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-white p-4 text-sm text-rose-800 sm:flex-row sm:items-center sm:justify-between">
+            <p>{queueError}</p>
+            <button
+              type="button"
+              onClick={() => restaurantId && loadQueueData(restaurantId)}
+              disabled={!restaurantId || loading}
+              className="min-h-11 rounded-xl border border-rose-200 px-4 py-2 font-semibold transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Try again
+            </button>
+          </div>
+        )}
         {/* Real-time KPI Bar */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -702,8 +720,8 @@ export default function StaffQueueDashboard() {
 
       {/* ================= ASSIGN TABLE MODAL ================= */}
       {assignModalOpen && selectedEntryForTable && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Assign Table</h3>
@@ -775,8 +793,8 @@ export default function StaffQueueDashboard() {
 
       {/* ================= MANUAL WALK-IN MODAL ================= */}
       {walkinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl md:p-8">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Register Walk-in Guest</h3>

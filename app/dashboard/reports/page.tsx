@@ -14,42 +14,36 @@ import {
   Printer,
   ShieldAlert,
 } from 'lucide-react';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function ReportsAnalyticsPage() {
-  const [restaurantId, setRestaurantId] = useState('');
+  const restaurant = useDashboardRestaurant();
+  const restaurantId = restaurant.id;
   const [range, setRange] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     async function loadReports() {
       try {
         setLoading(true);
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${restaurantId}/reports?range=${range}`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Unable to load reports.');
         }
-
-        if (restId) {
-          setRestaurantId(restId);
-          const res = await fetch(`/api/restaurants/${restId}/reports?range=${range}`);
-          const data = await res.json();
-          if (data.success) {
-            setReportData(data);
-          }
-        }
-      } catch (e) {
+        setReportData(data);
+      } catch (error) {
+        console.error('Restaurant reports request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load reports.');
       } finally {
         setLoading(false);
       }
     }
     loadReports();
-  }, [range]);
+  }, [range, restaurantId]);
 
   const handleExportCsv = () => {
     if (!reportData?.metrics) return;
@@ -110,37 +104,53 @@ export default function ReportsAnalyticsPage() {
 
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 rounded-xl bg-wepass-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-wepass-700 transition"
+            disabled={!reportData?.metrics || loading}
+            className="flex min-h-11 items-center gap-1.5 rounded-xl bg-wepass-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-wepass-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-4 w-4" /> Export CSV
           </button>
         </div>
       </div>
+      {loadError && (
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {loadError}
+        </p>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="rounded-3xl bg-white p-5 shadow-subtle border border-slate-200">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Guests</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{m?.totalGuests || 0}</p>
-          <p className="text-xs text-slate-500 mt-1 font-medium">{m?.totalParties || 0} registered parties</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">{m?.totalGuests ?? '—'}</p>
+          <p className="text-xs text-slate-500 mt-1 font-medium">{m?.totalParties ?? '—'} registered parties</p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-subtle border border-amber-100">
           <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">Average Wait</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">~{m?.avgWaitMinutes || 0}m</p>
-          <p className="text-xs text-amber-700 mt-1 font-medium">Peak: {m?.peakHour || '19:00 - 21:00'}</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">
+            {m?.avgWaitMinutes == null ? '—' : `~${m.avgWaitMinutes}m`}
+          </p>
+          <p className="text-xs text-amber-700 mt-1 font-medium">Peak: {m?.peakHour ?? '—'}</p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-subtle border border-purple-100">
           <p className="text-[11px] font-bold uppercase tracking-wider text-purple-700">Table Turnover</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{m?.tableUtilisation || 0}%</p>
-          <p className="text-xs text-purple-700 mt-1 font-medium">{m?.tablesOccupied || 0} of {m?.totalTables || 0} tables in use</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">
+            {m?.tableUtilisation == null ? '—' : `${m.tableUtilisation}%`}
+          </p>
+          <p className="text-xs text-purple-700 mt-1 font-medium">
+            {m?.tablesOccupied ?? '—'} of {m?.totalTables ?? '—'} tables in use
+          </p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-subtle border border-rose-100">
           <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700">Drop-off Rates</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{m?.cancellationRate || 0}%</p>
-          <p className="text-xs text-rose-600 mt-1 font-medium">No-show rate: {m?.noShowRate || 0}%</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">
+            {m?.cancellationRate == null ? '—' : `${m.cancellationRate}%`}
+          </p>
+          <p className="text-xs text-rose-600 mt-1 font-medium">
+            No-show rate: {m?.noShowRate == null ? '—' : `${m.noShowRate}%`}
+          </p>
         </div>
       </div>
 
@@ -159,7 +169,7 @@ export default function ReportsAnalyticsPage() {
             </div>
           </div>
           <span className="text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-            {reportData?.fairnessAudits?.length || 0} Audited Exceptions
+            {reportData?.fairnessAudits?.length ?? '—'} Audited Exceptions
           </span>
         </div>
 
@@ -200,7 +210,7 @@ export default function ReportsAnalyticsPage() {
         ) : (
           <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <p className="text-xs text-slate-500 font-semibold">
-              No queue fairness exceptions recorded in this period. All guests were seated in strict sequential queue order.
+              {loading ? 'Loading queue fairness activity…' : 'No queue fairness exceptions recorded in this period.'}
             </p>
           </div>
         )}

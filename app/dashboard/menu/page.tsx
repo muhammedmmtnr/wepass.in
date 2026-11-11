@@ -10,12 +10,15 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function MenuManagementPage() {
-  const [restaurantId, setRestaurantId] = useState('');
+  const restaurant = useDashboardRestaurant();
+  const restaurantId = restaurant.id;
   const [categories, setCategories] = useState<any[]>([]);
   const [unassignedItems, setUnassignedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // New item modal
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
@@ -32,32 +35,32 @@ export default function MenuManagementPage() {
     async function loadMenu() {
       try {
         setLoading(true);
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${restaurantId}/menu`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Unable to load the restaurant menu.');
         }
-
-        if (restId) {
-          setRestaurantId(restId);
-          const res = await fetch(`/api/restaurants/${restId}/menu`);
-          const data = await res.json();
-          if (data.success) {
-            setCategories(data.categories || []);
-            setUnassignedItems(data.unassignedItems || []);
-          }
-        }
-      } catch (e) {
+        setCategories(data.categories || []);
+        setUnassignedItems(data.unassignedItems || []);
+      } catch (error) {
+        console.error('Restaurant menu request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load the restaurant menu.');
       } finally {
         setLoading(false);
       }
     }
     loadMenu();
-  }, []);
+  }, [restaurantId]);
+
+  if (loading) {
+    return (
+      <div role="status" className="flex h-64 items-center justify-center">
+        <span className="sr-only">Loading restaurant menu</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-wepass-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +139,11 @@ export default function MenuManagementPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {loadError && (
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {loadError}
+        </p>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-subtle border border-slate-200">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Digital Menu</h1>
@@ -154,6 +162,11 @@ export default function MenuManagementPage() {
 
       {/* Categories & Items List */}
       <div className="space-y-6">
+        {categories.length === 0 && !loadError && (
+          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+            No menu categories have been created yet.
+          </p>
+        )}
         {categories.map((cat) => (
           <div key={cat.id} className="rounded-3xl bg-white p-6 shadow-subtle border border-slate-200">
             <h3 className="text-base font-extrabold text-slate-900 mb-4">{cat.name}</h3>
@@ -210,8 +223,8 @@ export default function MenuManagementPage() {
 
       {/* Add Item Modal */}
       {isItemModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl md:p-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900">Add Menu Item</h3>
               <button

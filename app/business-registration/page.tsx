@@ -114,7 +114,7 @@ export default function BusinessRegistrationPage() {
   };
 
   const inputClassName =
-    'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-black outline-none transition placeholder:text-slate-400 focus:border-[#079F61] focus:ring-2 focus:ring-[#079F61]/15';
+    'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-black outline-none transition placeholder:text-slate-400 focus:border-[#237A50] focus:ring-2 focus:ring-[#237A50]/15';
   const labelClassName = 'mb-1.5 block text-sm font-semibold text-slate-800';
 
   return (
@@ -122,14 +122,14 @@ export default function BusinessRegistrationPage() {
       <div className={`${styles.container} mx-auto max-w-3xl`}>
         <div className={`${styles.header} mb-8 flex items-center justify-between`}>
           <BrandLogo className={styles.brand} size="md" showSubtitle />
-          <Link href="/" className={`${styles.homeLink} inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#079F61]`}>
+          <Link href="/" className={`${styles.homeLink} inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#237A50]`}>
             <ArrowLeft className="h-4 w-4" />
             Home
           </Link>
         </div>
 
         <section className={`${styles.card} overflow-hidden rounded-3xl border border-white bg-white shadow-xl shadow-emerald-950/5`}>
-          <div className={`${styles.hero} bg-[#079F61] px-6 py-8 text-white sm:px-10 sm:py-10`}>
+          <div className={`${styles.hero} bg-[#237A50] px-6 py-8 text-white sm:px-10 sm:py-10`}>
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
               <Building2 className="h-6 w-6" />
             </div>
@@ -143,7 +143,7 @@ export default function BusinessRegistrationPage() {
           <div className={`${styles.content} p-6 sm:p-10`}>
             {submitted && (
               <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#079F61]" />
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#237A50]" />
                 <div>
                   <p className="font-bold">
                     {submittedAsDemo
@@ -175,7 +175,7 @@ export default function BusinessRegistrationPage() {
                 ] as const).map(([field, type, placeholder, required]) => (
                   <div key={field}>
                     <label className={labelClassName} htmlFor={field}>
-                      {fieldLabels[field]}{required && <span className="ml-1 text-[#079F61]">*</span>}
+                      {fieldLabels[field]}{required && <span className="ml-1 text-[#237A50]">*</span>}
                     </label>
                     <input
                       id={field}
@@ -198,7 +198,7 @@ export default function BusinessRegistrationPage() {
 
               <div>
                 <label className={labelClassName} htmlFor="notes">
-                  {fieldLabels.notes}<span className="ml-1 text-[#079F61]">*</span>
+                  {fieldLabels.notes}<span className="ml-1 text-[#237A50]">*</span>
                 </label>
                 <textarea
                   id="notes"
@@ -221,7 +221,7 @@ export default function BusinessRegistrationPage() {
                   name="requestType"
                   value="business_enquiry"
                   disabled={submitting}
-                  className="w-full rounded-xl border border-[#079F61] bg-white px-6 py-3.5 text-sm font-bold text-[#079F61] transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-[#079F61] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="w-full rounded-xl border border-[#237A50] bg-white px-6 py-3.5 text-sm font-bold text-[#237A50] transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-[#237A50] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {submitting ? 'Submitting…' : 'Send business enquiry'}
                 </button>
@@ -230,7 +230,7 @@ export default function BusinessRegistrationPage() {
                   name="requestType"
                   value="demo_booking"
                   disabled={submitting}
-                  className="w-full rounded-xl bg-[#079F61] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#067f4e] focus:outline-none focus:ring-2 focus:ring-[#079F61] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="w-full rounded-xl bg-[#237A50] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#087c50] focus:outline-none focus:ring-2 focus:ring-[#237A50] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {submitting ? 'Submitting…' : 'Book a demo'}
                 </button>
@@ -239,9 +239,9 @@ export default function BusinessRegistrationPage() {
 
             <p className={`${styles.footer} mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500`}>
               Already have a WE PASS account?{' '}
-              <Link href="/login" className="font-semibold text-[#079F61] hover:underline">Sign in</Link>
+              <Link href="/login" className="font-semibold text-[#237A50] hover:underline">Sign in</Link>
               {' · '}
-              <Link href="/register" className="font-semibold text-[#079F61] hover:underline">Create an account</Link>
+              <Link href="/register" className="font-semibold text-[#237A50] hover:underline">Create an account</Link>
             </p>
           </div>
         </section>

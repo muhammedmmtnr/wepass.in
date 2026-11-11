@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Settings, Save, CheckCircle2, Store, Clock, Users, Shield } from 'lucide-react';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function RestaurantSettingsPage() {
+  const sessionRestaurant = useDashboardRestaurant();
   const [restaurant, setRestaurant] = useState<any>(null);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
@@ -19,49 +21,67 @@ export default function RestaurantSettingsPage() {
 
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${sessionRestaurant.id}`);
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.restaurant) {
+          throw new Error(data.error || 'Unable to load restaurant settings.');
         }
-
-        if (restId) {
-          const res = await fetch(`/api/restaurants/${restId}`);
-          const data = await res.json();
-          if (data.success && data.restaurant) {
-            const r = data.restaurant;
-            setRestaurant(r);
-            setName(r.name || '');
-            setCategory(r.category || '');
-            setPhone(r.phone || '');
-            setEmail(r.email || '');
-            setAddress(r.address || '');
-            setCity(r.city || '');
-            setAvgDining(r.avgDiningDurationMin || 45);
-            setWaitPerParty(r.estimatedWaitPerPartyMin || 8);
-            setMaxParty(r.maxPartySize || 12);
-            setCallDeadline(r.callDeadlineMinutes || 10);
-            setIsQueueOpen(r.isQueueOpen);
-          }
-        }
-      } catch (e) {}
+        const r = data.restaurant;
+        setRestaurant(r);
+        setName(r.name || '');
+        setCategory(r.category || '');
+        setPhone(r.phone || '');
+        setEmail(r.email || '');
+        setAddress(r.address || '');
+        setCity(r.city || '');
+        setAvgDining(r.avgDiningDurationMin ?? 45);
+        setWaitPerParty(r.estimatedWaitPerPartyMin ?? 8);
+        setMaxParty(r.maxPartySize ?? 12);
+        setCallDeadline(r.callDeadlineMinutes ?? 10);
+        setIsQueueOpen(r.isQueueOpen);
+      } catch (error) {
+        console.error('Restaurant settings request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load restaurant settings.');
+      } finally {
+        setLoading(false);
+      }
     }
     loadSettings();
-  }, []);
+  }, [sessionRestaurant.id]);
+
+  if (loading) {
+    return (
+      <div role="status" className="flex h-64 items-center justify-center">
+        <span className="sr-only">Loading restaurant settings</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-wepass-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-3xl p-4 py-10 md:p-8">
+        <p role="alert" className="rounded-2xl border border-rose-200 bg-white p-5 text-sm text-rose-800">
+          {loadError}
+        </p>
+      </div>
+    );
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!restaurant?.id) return;
     setSaving(true);
     setSavedSuccess(false);
+    setSaveError('');
 
     try {
       const res = await fetch(`/api/restaurants/${restaurant.id}`, {
@@ -82,11 +102,13 @@ export default function RestaurantSettingsPage() {
         }),
       });
 
-      if (res.ok) {
-        setSavedSuccess(true);
-        setTimeout(() => setSavedSuccess(false), 3000);
-      }
-    } catch (e) {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to save restaurant settings.');
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (error) {
+      console.error('Restaurant settings update failed:', error);
+      setSaveError(error instanceof Error ? error.message : 'Unable to save restaurant settings.');
     } finally {
       setSaving(false);
     }
@@ -106,6 +128,11 @@ export default function RestaurantSettingsPage() {
           <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
             <CheckCircle2 className="h-4 w-4" /> Changes Saved!
           </span>
+        )}
+        {saveError && (
+          <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            {saveError}
+          </p>
         )}
       </div>
 

@@ -12,10 +12,6 @@ import {
   ChevronRight,
   ShieldCheck,
   AlertCircle,
-  Plus,
-  Minus,
-  CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 
@@ -35,6 +31,8 @@ export default function RestaurantLandingPage({
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [partySize, setPartySize] = useState(2);
+  const [customPartyOpen, setCustomPartyOpen] = useState(false);
+  const [customPartySize, setCustomPartySize] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [accessibilityNeeds, setAccessibilityNeeds] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -61,8 +59,9 @@ export default function RestaurantLandingPage({
           setError(data.error || 'Failed to load restaurant');
         } else {
           setRestaurant(data.restaurant);
+          setPartySize(Math.min(2, data.restaurant.maxPartySize || 12));
         }
-      } catch (err: any) {
+      } catch {
         setError('Network error loading restaurant details.');
       } finally {
         setLoading(false);
@@ -144,23 +143,25 @@ export default function RestaurantLandingPage({
     );
   }
 
+  const maxPartySize = restaurant.maxPartySize || 12;
+
   return (
-    <div className="min-h-screen bg-[#E8F3EC] text-slate-800 pb-16">
+    <div className="min-h-screen bg-[#F4F6F5] text-slate-800 pb-12">
       {/* Top WePass Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-wepass-200/50 px-4 py-3">
+      <header className="sticky top-0 z-40 border-b border-[#E1E9E3] bg-white/90 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between">
           <BrandLogo size="sm" />
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold text-wepass-700">Live Waitlist</span>
+            <span className="text-xs font-semibold text-[#237A50]">Live waitlist</span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg px-4 pt-4">
+      <main className="mx-auto w-full max-w-lg px-4 pb-8 pt-4 sm:px-5 sm:pt-6">
         {/* Active Ticket Banner if already joined */}
         {existingToken && (
-          <div className="mb-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-wepass-600 to-wepass-500 p-4 text-white shadow-premium">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#0B3829] p-4 text-white">
             <div>
               <p className="text-[11px] font-semibold text-wepass-100 uppercase tracking-wider">
                 Active Ticket Detected
@@ -169,7 +170,7 @@ export default function RestaurantLandingPage({
             </div>
             <Link
               href={`/queue/${existingToken}?slug=${slug}`}
-              className="rounded-xl bg-white px-4 py-2 text-xs font-bold text-wepass-700 shadow hover:bg-wepass-50 transition"
+              className="inline-flex min-h-11 items-center rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#087C50] transition hover:bg-[#E8F3EC]"
             >
               View My Spot →
             </Link>
@@ -177,106 +178,90 @@ export default function RestaurantLandingPage({
         )}
 
         {/* Restaurant Card */}
-        <div className="overflow-hidden rounded-3xl bg-white shadow-premium border border-white/60 mb-5">
-          {/* Banner */}
-          <div className="relative h-44 w-full bg-slate-100">
+        <section className="mb-4 overflow-hidden rounded-2xl border border-[#E2E9E4] bg-white">
+          <div className="flex items-center gap-3.5 p-4 sm:p-5">
             {restaurant.bannerUrl ? (
               <img
                 src={restaurant.bannerUrl}
-                alt={restaurant.name}
-                className="h-full w-full object-cover"
+                alt=""
+                className="h-14 w-14 shrink-0 rounded-2xl object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-wepass-600 to-emerald-800 text-white font-extrabold text-2xl">
-                {restaurant.name}
+              <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#E8F3EC] text-sm font-bold text-[#237A50]">
+                {restaurant.name.slice(0, 2).toUpperCase()}
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between text-white">
-              <div>
-                <span className="rounded-full bg-white/20 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-emerald-200">
-                  {restaurant.category || 'Dining'}
-                </span>
-                <h1 className="text-xl font-black tracking-tight drop-shadow-sm mt-0.5">
-                  {restaurant.name}
-                </h1>
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#237A50]">You’re joining</p>
+              <h1 className="mt-0.5 truncate text-base font-bold text-[#17231D] sm:text-lg">{restaurant.name}</h1>
+              {restaurant.category && <p className="mt-0.5 truncate text-xs text-[#69766F]">{restaurant.category}</p>}
+              {(restaurant.address || restaurant.city) && (
+                <p className="mt-1 flex min-w-0 items-center gap-1 text-[11px] text-[#89958E]">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{[restaurant.address, restaurant.city].filter(Boolean).join(', ')}</span>
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Details */}
-          <div className="p-4">
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
-              <MapPin className="h-4 w-4 text-wepass-600 shrink-0" />
-              <span className="truncate">
-                {restaurant.address ? `${restaurant.address}, ` : ''}
-                {restaurant.city || 'Bengaluru'}
-              </span>
-            </div>
-
-            {/* Live Queue Status Strip */}
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-wepass-50 border border-wepass-200/60 p-3">
+          <div className="grid grid-cols-2 gap-2 border-t border-[#E9EFEB] bg-[#FAFCFA] p-3 sm:p-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-wepass-500/10 text-wepass-700">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EC] text-[#237A50]">
                   <Users className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                    In Queue
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#69766F]">
+                    In queue
                   </p>
-                  <p className="text-base font-extrabold text-slate-900">
+                  <p className="text-sm font-bold text-[#17231D] sm:text-base">
                     {restaurant.waitingCount} {restaurant.waitingCount === 1 ? 'party' : 'parties'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 border-l border-wepass-200/60 pl-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-weamber-500/10 text-weamber-600">
+              <div className="flex items-center gap-2.5 border-l border-[#E1E9E3] pl-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F7F1E3] text-[#AD8C43]">
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                    Est. Wait
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#69766F]">
+                    Est. wait
                   </p>
-                  <p className="text-base font-extrabold text-slate-900">
-                    ~{restaurant.estimatedWaitMinutes} mins
+                  <p className="text-sm font-bold text-[#17231D] sm:text-base">
+                    ~{restaurant.estimatedWaitMinutes} min
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* Quick Menu Link */}
-            {restaurant.menuCategories && restaurant.menuCategories.length > 0 && (
-              <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-50 p-2.5 text-xs text-slate-600 border border-slate-100 hover:bg-slate-100 transition">
-                <span className="flex items-center gap-2 font-medium">
-                  <Utensils className="h-4 w-4 text-wepass-600" /> Browse Digital Menu
-                </span>
-                <Link
-                  href={`/menu/${slug}`}
-                  className="font-bold text-wepass-700 flex items-center gap-0.5"
-                >
-                  View Menu <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            )}
           </div>
-        </div>
+
+          {restaurant.menuCategories && restaurant.menuCategories.length > 0 && (
+            <Link
+              href={`/menu/${slug}`}
+              className="flex min-h-11 items-center justify-between border-t border-[#E9EFEB] px-4 text-xs font-semibold text-[#34443B] transition hover:bg-[#FAFCFA]"
+            >
+              <span className="flex items-center gap-2"><Utensils className="h-4 w-4 text-[#237A50]" /> Browse digital menu</span>
+              <span className="flex items-center gap-1 text-[#087C50]">View menu <ChevronRight className="h-3.5 w-3.5" /></span>
+            </Link>
+          )}
+        </section>
 
         {/* Join Queue Form Card */}
         {restaurant.isQueueOpen ? (
-          <div className="rounded-3xl bg-white p-5 md:p-6 shadow-premium border border-white/60">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-extrabold text-slate-900">Join the Waitlist</h2>
-                <p className="text-xs text-slate-500">No need to stand outside. We’ll notify your phone.</p>
+          <section className="rounded-2xl border border-[#E2E9E4] bg-white p-4 shadow-[0_8px_24px_rgba(23,35,29,0.04)] sm:p-6">
+            <div className="mb-5 flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E8F3EC] text-[#237A50]">
+                <Users className="h-5 w-5" />
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-wepass-100 text-wepass-700">
-                <Sparkles className="h-5 w-5" />
+              <div>
+                <h2 className="text-lg font-bold tracking-tight text-[#17231D]">Join the Queue</h2>
+                <p className="mt-1 text-xs leading-5 text-[#69766F]">
+                  Share a few details to join {restaurant.name}’s live waitlist.
+                </p>
               </div>
             </div>
 
             {formError && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-medium text-rose-700">
+              <div role="alert" className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{formError}</span>
               </div>
@@ -285,98 +270,147 @@ export default function RestaurantLandingPage({
             <form onSubmit={handleJoinQueue} className="space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Guest Name <span className="text-rose-500">*</span>
+                <label htmlFor="guest-name" className="mb-1.5 block text-sm font-semibold text-[#34443B]">
+                  Your name <span className="text-rose-500">*</span>
                 </label>
                 <input
+                  id="guest-name"
+                  name="name"
                   type="text"
+                  autoComplete="name"
                   required
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-wepass-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-wepass-500/20 transition"
+                  placeholder="Enter your name"
+                  className="h-12 w-full rounded-xl border border-[#DDE6E0] bg-white px-3.5 text-base font-medium text-[#17231D] outline-none transition placeholder:text-[#9AA69F] focus:border-[#237A50] focus:ring-4 focus:ring-[#237A50]/10"
                 />
               </div>
 
               {/* Mobile Number */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Mobile Number <span className="text-rose-500">*</span>
+                <label htmlFor="guest-phone" className="mb-1.5 block text-sm font-semibold text-[#34443B]">
+                  Mobile number <span className="text-rose-500">*</span>
                 </label>
-                <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
-                    +91
-                  </div>
+                <div className="flex h-12 items-center rounded-xl border border-[#DDE6E0] bg-white px-3.5 transition focus-within:border-[#237A50] focus-within:ring-4 focus-within:ring-[#237A50]/10">
+                  <span className="mr-3 border-r border-[#E1E9E3] pr-3 text-sm font-semibold text-[#69766F]">+91</span>
                   <input
+                    id="guest-phone"
+                    name="tel"
                     type="tel"
+                    autoComplete="tel-national"
+                    inputMode="tel"
                     required
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
-                    placeholder="98765 43210"
+                    placeholder="10-digit mobile number"
                     maxLength={14}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 pl-12 pr-4 py-3 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-wepass-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-wepass-500/20 transition"
+                    className="h-full min-w-0 flex-1 bg-transparent text-base font-medium text-[#17231D] outline-none placeholder:text-[#9AA69F]"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-slate-400">
-                  Used to manage your queue ticket and contact you about your table.
+                <p className="mt-1.5 text-[11px] leading-4 text-[#89958E]">
+                  Used for your queue ticket and table updates.
                 </p>
               </div>
 
-              {/* Party Size Stepper */}
+              {/* Party size */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Party Size (Guests) <span className="text-rose-500">*</span>
-                </label>
-                <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/50 p-2">
-                  <button
-                    type="button"
-                    onClick={() => setPartySize(Math.max(1, partySize - 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-slate-700 hover:bg-slate-100 active:scale-95 transition"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <div className="text-center">
-                    <span className="text-xl font-black text-slate-900">{partySize}</span>
-                    <span className="ml-1 text-xs font-semibold text-slate-500">
-                      {partySize === 1 ? 'Guest' : 'Guests'}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPartySize(Math.min(restaurant.maxPartySize || 12, partySize + 1))
-                    }
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-slate-700 hover:bg-slate-100 active:scale-95 transition"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+                <div className="mb-2 flex items-baseline justify-between gap-2">
+                  <label className="block text-sm font-semibold text-[#34443B]">
+                    Party size <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-[#89958E]">Up to {maxPartySize} guests</span>
                 </div>
+                <p className="mb-2 text-xs text-[#89958E]">How many people are in your party?</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {[1, 2, 3, 4].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      aria-pressed={!customPartyOpen && partySize === size}
+                      disabled={size > maxPartySize}
+                      onClick={() => {
+                        setPartySize(size);
+                        setCustomPartyOpen(false);
+                      }}
+                      className={`min-h-11 rounded-xl border text-sm font-semibold transition ${
+                        !customPartyOpen && partySize === size
+                          ? 'border-[#087C50] bg-[#087C50] text-white'
+                          : 'border-[#DDE6E0] bg-white text-[#34443B] hover:bg-[#F7FAF8]'
+                      } disabled:cursor-not-allowed disabled:opacity-40`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                {maxPartySize > 4 && (
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      aria-expanded={customPartyOpen}
+                      onClick={() => {
+                        setCustomPartyOpen((open) => {
+                          if (!open) setCustomPartySize(partySize > 4 ? String(partySize) : '');
+                          return !open;
+                        });
+                      }}
+                      className={`min-h-10 rounded-xl border px-3.5 text-xs font-semibold transition ${
+                        customPartyOpen
+                          ? 'border-[#237A50] bg-[#E8F3EC] text-[#087C50]'
+                          : 'border-[#DDE6E0] text-[#34443B] hover:bg-[#F7FAF8]'
+                      }`}
+                    >
+                      Custom party size
+                    </button>
+                    {customPartyOpen && (
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min={5}
+                        max={maxPartySize}
+                        value={customPartySize}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setCustomPartySize(value);
+                          const parsed = Number(value);
+                          if (Number.isInteger(parsed) && parsed >= 5 && parsed <= maxPartySize) {
+                            setPartySize(parsed);
+                          }
+                        }}
+                        aria-label="Custom party size"
+                        placeholder={`5–${maxPartySize} guests`}
+                        className="mt-2 h-12 w-full rounded-xl border border-[#DDE6E0] px-3.5 text-base text-[#17231D] outline-none focus:border-[#237A50] focus:ring-4 focus:ring-[#237A50]/10"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Special Requests */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Special Request (Optional)
+                <label htmlFor="guest-request" className="mb-1.5 block text-sm font-semibold text-[#34443B]">
+                  Special request <span className="font-normal text-[#89958E]">(optional)</span>
                 </label>
                 <input
+                  id="guest-request"
+                  name="special-request"
                   type="text"
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
-                  placeholder="e.g. High chair, birthday, window seat..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:border-wepass-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-wepass-500 transition"
+                  placeholder="Add a note for the restaurant"
+                  className="h-12 w-full rounded-xl border border-[#DDE6E0] bg-white px-3.5 text-base text-[#17231D] outline-none transition placeholder:text-[#9AA69F] focus:border-[#237A50] focus:ring-4 focus:ring-[#237A50]/10"
                 />
               </div>
 
               {/* Accessibility Checkbox */}
-              <label className="flex items-center gap-2.5 rounded-xl bg-wepass-50/50 border border-wepass-200/50 p-3 text-xs text-slate-700 cursor-pointer">
+              <label className="flex min-h-12 cursor-pointer items-start gap-2.5 rounded-xl border border-[#DDE6E0] bg-[#FAFCFA] p-3 text-xs text-[#34443B]">
                 <input
                   type="checkbox"
                   checked={accessibilityNeeds}
                   onChange={(e) => setAccessibilityNeeds(e.target.checked)}
-                  className="rounded text-wepass-600 focus:ring-wepass-500"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded accent-[#087C50] focus:ring-[#237A50]"
                 />
-                <span className="font-medium text-slate-700">
-                  Accessibility accommodation needed (wheelchair, ground floor)
+                <span className="font-medium leading-5">
+                  I need an accessibility accommodation
                 </span>
               </label>
 
@@ -384,17 +418,17 @@ export default function RestaurantLandingPage({
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-2xl bg-gradient-to-r from-wepass-600 to-wepass-500 py-3.5 text-sm font-extrabold text-white shadow-premium shadow-wepass-500/25 hover:from-wepass-700 hover:to-wepass-600 active:scale-[0.99] transition disabled:opacity-50"
+                className="w-full min-h-12 rounded-xl bg-[#087C50] px-4 py-3.5 text-sm font-bold text-white transition hover:bg-[#066641] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {submitting ? 'Securing Your Spot...' : 'Join Waitlist Now'}
+                {submitting ? 'Joining the queue…' : 'Confirm & Join Queue'}
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-wepass-600" />
-                <span>Fair queue ordering powered by WePass</span>
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#89958E]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#237A50]" />
+                <span>Fair queue ordering, powered by WePass</span>
               </div>
             </form>
-          </div>
+          </section>
         ) : (
           <div className="rounded-3xl bg-white p-8 text-center shadow-premium border border-slate-100">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">

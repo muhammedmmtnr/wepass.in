@@ -12,11 +12,14 @@ import {
   XCircle,
   X,
 } from 'lucide-react';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function StaffManagementPage() {
-  const [restaurantId, setRestaurantId] = useState('');
+  const restaurant = useDashboardRestaurant();
+  const restaurantId = restaurant.id;
   const [staffList, setStaffList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Invite modal state
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -31,31 +34,31 @@ export default function StaffManagementPage() {
     async function loadStaff() {
       try {
         setLoading(true);
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${restaurantId}/staff`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Unable to load restaurant staff.');
         }
-
-        if (restId) {
-          setRestaurantId(restId);
-          const res = await fetch(`/api/restaurants/${restId}/staff`);
-          const data = await res.json();
-          if (data.success) {
-            setStaffList(data.staff || []);
-          }
-        }
-      } catch (e) {
+        setStaffList(data.staff || []);
+      } catch (error) {
+        console.error('Restaurant staff request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load restaurant staff.');
       } finally {
         setLoading(false);
       }
     }
     loadStaff();
-  }, []);
+  }, [restaurantId]);
+
+  if (loading) {
+    return (
+      <div role="status" className="flex h-64 items-center justify-center">
+        <span className="sr-only">Loading restaurant staff</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-wepass-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   const handleInviteStaff = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +119,11 @@ export default function StaffManagementPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {loadError && (
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {loadError}
+        </p>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-subtle border border-slate-200">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Staff & Roles</h1>
@@ -134,8 +142,8 @@ export default function StaffManagementPage() {
 
       {/* Staff List Table */}
       <div className="overflow-hidden rounded-3xl bg-white shadow-subtle border border-slate-200">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div role="region" aria-label="Staff members" tabIndex={0} className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Staff Member</th>
@@ -146,6 +154,13 @@ export default function StaffManagementPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
+              {staffList.length === 0 && !loadError && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                    No staff members have been added to this restaurant yet.
+                  </td>
+                </tr>
+              )}
               {staffList.map((st) => (
                 <tr key={st.id} className="hover:bg-slate-50/70 transition">
                   <td className="px-6 py-4">
@@ -198,8 +213,8 @@ export default function StaffManagementPage() {
 
       {/* Add Staff Modal */}
       {isInviteOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl md:p-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900">Add Staff Member</h3>
               <button

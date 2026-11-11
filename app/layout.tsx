@@ -2,8 +2,26 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://wepass.in'),
   title: 'WePass — Your Queue. Your Time. Your Table.',
-  description: 'Premium restaurant queue and table management platform.',
+  description: 'Join restaurant queues by QR code, track your place in real time, and help your team manage tables with WePass.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://wepass.in/',
+    siteName: 'WePass',
+    title: 'WePass — Your Queue. Your Time. Your Table.',
+    description: 'A smarter way to manage restaurant queues and give every guest a better experience.',
+    images: ['/brand/logo-card.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'WePass — Your Queue. Your Time. Your Table.',
+    description: 'A smarter way to manage restaurant queues and give every guest a better experience.',
+    images: ['/brand/logo-card.png'],
+  },
   icons: {
     icon: '/brand/wepass-icon.png',
     apple: '/brand/wepass-icon.png',
@@ -14,7 +32,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#079F61',
+  themeColor: '#237A50',
 };
 
 export default function RootLayout({

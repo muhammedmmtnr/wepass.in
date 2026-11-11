@@ -25,7 +25,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [category, setCategory] = useState('Casual Dining');
-  const [city, setCity] = useState('Bengaluru');
+  const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -110,7 +110,7 @@ export default function RegisterPage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Marco Rossi"
+                    placeholder="Your full name"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 pl-10 pr-3 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-wepass-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-wepass-500 transition"
                   />
                 </div>
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                   required
                   value={restaurantName}
                   onChange={(e) => setRestaurantName(e.target.value)}
-                  placeholder="e.g. The Olive Bistro"
+                  placeholder="Your restaurant name"
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 pl-10 pr-3 py-2.5 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-wepass-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-wepass-500 transition"
                 />
               </div>

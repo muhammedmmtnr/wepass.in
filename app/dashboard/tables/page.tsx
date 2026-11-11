@@ -12,11 +12,14 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function TablesManagementPage() {
-  const [restaurantId, setRestaurantId] = useState('');
+  const restaurant = useDashboardRestaurant();
+  const restaurantId = restaurant.id;
   const [tables, setTables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [sectionFilter, setSectionFilter] = useState('ALL');
 
   // New table modal state
@@ -31,31 +34,22 @@ export default function TablesManagementPage() {
     async function loadTables() {
       try {
         setLoading(true);
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${restaurantId}/tables`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Unable to load restaurant tables.');
         }
-
-        if (restId) {
-          setRestaurantId(restId);
-          const res = await fetch(`/api/restaurants/${restId}/tables`);
-          const data = await res.json();
-          if (data.success) {
-            setTables(data.tables || []);
-          }
-        }
-      } catch (e) {
+        setTables(data.tables || []);
+      } catch (error) {
+        console.error('Restaurant tables request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load restaurant tables.');
       } finally {
         setLoading(false);
       }
     }
     loadTables();
-  }, []);
+  }, [restaurantId]);
 
   const handleAddTable = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,8 +118,22 @@ export default function TablesManagementPage() {
     return t.section === sectionFilter;
   });
 
+  if (loading) {
+    return (
+      <div role="status" className="flex h-64 items-center justify-center">
+        <span className="sr-only">Loading restaurant tables</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-wepass-500 border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {loadError && (
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {loadError}
+        </p>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-subtle border border-slate-200">
         <div>
@@ -162,6 +170,11 @@ export default function TablesManagementPage() {
 
       {/* Tables Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredTables.length === 0 && !loadError && (
+          <p className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+            No tables have been added to this restaurant yet.
+          </p>
+        )}
         {filteredTables.map((tbl) => (
           <div
             key={tbl.id}
@@ -219,8 +232,8 @@ export default function TablesManagementPage() {
 
       {/* Add Table Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl md:p-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900">Add New Table</h3>
               <button

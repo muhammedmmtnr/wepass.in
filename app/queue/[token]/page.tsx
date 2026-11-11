@@ -401,7 +401,7 @@ export default function GuestQueueTrackingPage({
               <p className="text-xs font-semibold text-slate-500 mb-1">Your Current Position</p>
               <div className="flex items-baseline justify-center gap-1.5">
                 <span className="text-6xl font-black tracking-tighter text-slate-900">
-                  #{position || 1}
+                  #{position ?? '—'}
                 </span>
                 <span className="text-sm font-bold text-slate-500">in line</span>
               </div>
@@ -521,14 +521,14 @@ export default function GuestQueueTrackingPage({
 
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 text-center">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:items-center">
+          <div className="my-auto w-full max-w-sm rounded-3xl border border-slate-100 bg-white p-6 text-center shadow-2xl">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
               <AlertTriangle className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-slate-900">Cancel Queue Ticket?</h3>
             <p className="text-xs text-slate-500 mt-1 mb-5">
-              You will lose your #{position || 1} position in line. You will need to scan and re-join if you change your mind.
+              You will lose your #{position ?? '—'} position in line. You will need to scan and re-join if you change your mind.
             </p>
             <div className="flex items-center justify-center gap-3">
               <button

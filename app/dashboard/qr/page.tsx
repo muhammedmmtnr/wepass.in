@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   QrCode,
   Download,
@@ -16,44 +17,38 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
+import { useDashboardRestaurant } from '@/components/DashboardRestaurantContext';
 
 export default function QRManagementPage() {
-  const [restaurantId, setRestaurantId] = useState('');
+  const currentRestaurant = useDashboardRestaurant();
+  const restaurantId = currentRestaurant.id;
   const [qrData, setQrData] = useState<any>(null);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     async function loadQR() {
       try {
         setLoading(true);
-        const authRes = await fetch('/api/auth/me');
-        const authData = await authRes.json();
-        let restId = authData?.user?.currentRestaurant?.id;
-
-        if (!restId) {
-          const restRes = await fetch('/api/restaurants/by-slug/olive-bistro');
-          const restData = await restRes.json();
-          restId = restData?.restaurant?.id;
+        setLoadError('');
+        const res = await fetch(`/api/restaurants/${restaurantId}/qr`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Unable to load restaurant QR details.');
         }
-
-        if (restId) {
-          setRestaurantId(restId);
-          const res = await fetch(`/api/restaurants/${restId}/qr`);
-          const data = await res.json();
-          if (data.success) {
-            setQrData(data.qr);
-            setRestaurant(data.restaurant);
-          }
-        }
-      } catch (e) {
+        setQrData(data.qr);
+        setRestaurant(data.restaurant);
+      } catch (error) {
+        console.error('Restaurant QR request failed:', error);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load restaurant QR details.');
       } finally {
         setLoading(false);
       }
     }
     loadQR();
-  }, []);
+  }, [restaurantId]);
 
   const handleCopyLink = () => {
     if (!qrData?.permanentUrl) return;
@@ -78,6 +73,16 @@ export default function QRManagementPage() {
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-wepass-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-3xl p-4 py-10 md:p-8">
+        <p role="alert" className="rounded-2xl border border-rose-200 bg-white p-5 text-sm text-rose-800">
+          {loadError}
+        </p>
       </div>
     );
   }
@@ -114,7 +119,7 @@ export default function QRManagementPage() {
         <div className="rounded-2xl bg-white p-4 shadow-subtle border border-slate-200 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Scans</p>
-            <p className="text-2xl font-black text-slate-900">{qrData?.totalScans || 148}</p>
+            <p className="text-2xl font-black text-slate-900">{qrData?.totalScans ?? '—'}</p>
             <span className="text-[10px] text-slate-400 font-medium">Guest phone camera scans</span>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
@@ -125,7 +130,7 @@ export default function QRManagementPage() {
         <div className="rounded-2xl bg-white p-4 shadow-subtle border border-emerald-100 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Total Joins</p>
-            <p className="text-2xl font-black text-slate-900">{qrData?.totalJoins || 92}</p>
+            <p className="text-2xl font-black text-slate-900">{qrData?.totalJoins ?? '—'}</p>
             <span className="text-[10px] text-emerald-700 font-medium">Parties entered queue</span>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
@@ -136,7 +141,9 @@ export default function QRManagementPage() {
         <div className="rounded-2xl bg-white p-4 shadow-subtle border border-amber-100 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800">Conversion Rate</p>
-            <p className="text-2xl font-black text-slate-900">{qrData?.conversionRate || 62}%</p>
+            <p className="text-2xl font-black text-slate-900">
+              {qrData?.conversionRate == null ? '—' : `${qrData.conversionRate}%`}
+            </p>
             <span className="text-[10px] text-amber-700 font-medium">Scan to join ratio</span>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
@@ -150,7 +157,7 @@ export default function QRManagementPage() {
         {/* Printable Stand Card Preview */}
         <div
           id="printable-stand"
-          className="rounded-4xl bg-gradient-to-b from-[#E8F3EC] to-white p-8 md:p-10 shadow-premium border-2 border-wepass-200/80 text-center flex flex-col items-center justify-between min-h-[540px]"
+          className="rounded-4xl flex min-h-[540px] flex-col items-center justify-between border-2 border-wepass-200/80 bg-gradient-to-b from-[#E8F3EC] to-white p-4 text-center shadow-premium sm:p-8 md:p-10"
         >
           {/* Brand header */}
           <div className="space-y-1">
@@ -163,7 +170,7 @@ export default function QRManagementPage() {
           {/* Restaurant identity */}
           <div className="my-2">
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-              {restaurant?.name || 'The Olive Bistro'}
+              {restaurant?.name ?? currentRestaurant.name}
             </h2>
             <p className="text-xs text-wepass-700 font-medium mt-0.5">
               Scan to join waitlist & track your table live
@@ -171,15 +178,19 @@ export default function QRManagementPage() {
           </div>
 
           {/* Clean Vector QR Card */}
-          <div className="relative rounded-3xl bg-white p-5 shadow-float border border-slate-100 inline-block">
+          <div className="relative inline-block max-w-full rounded-3xl border border-slate-100 bg-white p-3 shadow-float sm:p-5">
             {qrData?.qrDataUrl ? (
-              <img
+              <Image
                 src={qrData.qrDataUrl}
                 alt="WePass QR Code"
-                className="h-56 w-56 md:h-64 md:w-64 object-contain rounded-xl"
+                width={256}
+                height={256}
+                unoptimized
+                sizes="(max-width: 480px) 56vw, (max-width: 1023px) 224px, 256px"
+                className="h-[min(56vw,14rem)] w-[min(56vw,14rem)] rounded-xl object-contain sm:h-56 sm:w-56 md:h-64 md:w-64"
               />
             ) : (
-              <div className="h-64 w-64 bg-slate-100 animate-pulse rounded-xl" />
+              <div className="h-[min(56vw,14rem)] w-[min(56vw,14rem)] animate-pulse rounded-xl bg-slate-100 sm:h-56 sm:w-56 md:h-64 md:w-64" />
             )}
             <div className="mt-3 flex items-center justify-center gap-1.5 text-xs font-black text-wepass-700 uppercase tracking-widest font-mono">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
