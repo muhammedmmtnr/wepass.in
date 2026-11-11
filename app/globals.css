@@ -4023,6 +4023,29 @@ select {
 .home-header {
   background: linear-gradient(180deg, rgba(246, 255, 249, 0.9), rgba(232, 247, 237, 0.35));
   backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
+  box-shadow: 0 0 0 rgba(30, 94, 58, 0);
+  transition:
+    background-color 350ms ease,
+    border-color 350ms ease,
+    box-shadow 350ms ease,
+    backdrop-filter 350ms ease;
+}
+
+.home-header.is-scrolled {
+  border-bottom-color: rgba(215, 230, 219, 0.82);
+  background: rgba(247, 252, 248, 0.86);
+  box-shadow: 0 8px 24px rgba(30, 72, 46, 0.07);
+  backdrop-filter: blur(16px);
+}
+
+.home-header-inner {
+  height: 76px;
+  transition: height 350ms ease;
+}
+
+.home-header.is-scrolled .home-header-inner {
+  height: 66px;
 }
 
 .home-nav-shell {
@@ -4030,6 +4053,36 @@ select {
   border-color: rgba(255, 255, 255, 0.92);
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 12px 36px rgba(30, 94, 58, 0.09);
+  transition:
+    min-height 350ms ease,
+    padding 350ms ease,
+    background-color 350ms ease,
+    box-shadow 350ms ease;
+}
+
+.home-header.is-scrolled .home-nav-shell {
+  min-height: 3.5rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 7px 22px rgba(30, 94, 58, 0.07);
+}
+
+.home-demo-nav-button {
+  transition:
+    transform 300ms ease,
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.home-demo-nav-button:hover {
+  box-shadow: 0 7px 18px rgba(35, 122, 80, 0.14);
+}
+
+#about,
+#product,
+#how-it-works,
+#pricing,
+#contact {
+  scroll-margin-top: 6rem;
 }
 
 .home-nav-shell nav a {
@@ -4264,6 +4317,14 @@ select {
 }
 
 @media (min-width: 1024px) {
+  .home-header-inner {
+    height: 88px;
+  }
+
+  .home-header.is-scrolled .home-header-inner {
+    height: 72px;
+  }
+
   .home-hero-stage {
     grid-template-columns: minmax(0, 1fr) 19rem minmax(0, 1fr);
     gap: clamp(1.5rem, 3vw, 2.75rem);
@@ -4298,10 +4359,26 @@ select {
     background: rgba(245, 253, 248, 0.94);
   }
 
+  .home-header-inner {
+    height: 76px;
+  }
+
+  .home-header.is-scrolled .home-header-inner {
+    height: 64px;
+  }
+
   .home-nav-shell {
     min-height: 3.55rem;
     border-radius: 999px;
     padding-inline: 0.7rem;
+  }
+
+  #about,
+  #product,
+  #how-it-works,
+  #pricing,
+  #contact {
+    scroll-margin-top: 5rem;
   }
 
   .home-hero-heading {
@@ -4331,6 +4408,15 @@ select {
   .home-hero-rings {
     top: 23rem;
     width: 42rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-header,
+  .home-header-inner,
+  .home-nav-shell,
+  .home-demo-nav-button {
+    transition: none;
   }
 }
 

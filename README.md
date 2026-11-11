@@ -103,80 +103,34 @@ Built with **Prisma ORM** (configured for zero-config SQLite out-of-the-box, wit
 - npm or pnpm
 
 ### 2. Environment Variables
-Create a `.env` file in the project root:
+Create a `.env.local` file in the project root for local development:
 ```env
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="wepass-jwt-secret-secure-key-restaurant-system-2026"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-GOOGLE_APPS_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+GOOGLE_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/AKfycbzTLSjASt2__mY0DJcp0anr3E8XVxQX5au6H54rKKqxqZy9R8vhKoLKGR-vTx6nXT0Q/exec"
+GOOGLE_SCRIPT_API_SECRET="<same random secret configured in Apps Script Script Properties>"
 ```
 
-### Business lead collection to Google Sheets
+### Book a Demo: Sheets, email, and Calendar
 
-The public business enquiry and demo booking form is available at `/business-registration`. Visitors can send a business enquiry or book a demo without selecting a date or time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. Demo bookings are stored with the request type `demo_booking`. The spreadsheet URL by itself is not a submission endpoint.
+The demo form sends to the server-side `/api/book-demo` route. General business leads continue to use `/api/leads`. The server validates the values and forwards them to Apps Script; `GOOGLE_SCRIPT_API_SECRET` is never sent to browser code.
 
-1. Open the supplied spreadsheet with ID `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc` and create or select a sheet named `Leads`.
-2. In **Extensions → Apps Script**, add this handler. It appends each accepted lead as a new row and records the timestamp in Google Sheets.
+1. Make sure the Google account that owns the Apps Script has Editor access to spreadsheet `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc`.
+2. In **Extensions → Apps Script**, update the deployed project with [`google-apps-script/Code.gs`](./google-apps-script/Code.gs). Existing lead rows are preserved; the script checks the original ten headers and appends any missing integration columns.
+3. In Apps Script **Project Settings → Script Properties**, set:
+   - `API_SECRET`: the existing strong secret, matching `GOOGLE_SCRIPT_API_SECRET` in the server environment.
+   - `NOTIFICATION_EMAIL`: `wepass.official@gmail.com`.
+   - `CALENDAR_ID`: optional; leave unset to use the authorized account's default Calendar.
+4. Run `authorizeGoogleServices` from the Apps Script editor and approve the requested Sheets, Gmail, and Calendar scopes using the authorized WE PASS Google account.
+5. Deploy a new **Web app** version with **Execute as: Me** and **Who has access: Anyone**. Keep the existing `/exec` URL configured below, or update it if the deployment produces a new URL.
+6. Configure `GOOGLE_SCRIPT_WEB_APP_URL` and `GOOGLE_SCRIPT_API_SECRET` on the local server and production host. `.env.local` is ignored by Git. Never put the secret in client code, source files, or logs.
 
-```javascript
-const SPREADSHEET_ID = '1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc';
-const SHEET_NAME = 'Leads';
+The `WE PASS Leads` sheet gains columns for business type, requested demo date/time, duration, Calendar Event ID, email/calendar statuses, lead status, request ID, and customer confirmation status. Existing leads are not removed. Demo requests default to 30 minutes and offer 30-, 45-, or 60-minute durations. Date/time validation and Calendar event creation use Asia/Kolkata. Calendar events have no guests and are explicitly pending; a time conflict is recorded for rescheduling instead of creating an event.
 
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const required = [
-      'contactPersonName', 'businessName', 'city', 'district',
-      'state', 'whatsappNumber', 'notes'
-    ];
-    if (required.some((key) => !String(data[key] || '').trim())) {
-      throw new Error('Missing required fields');
-    }
-    const requestType = data.requestType || 'business_enquiry';
-    if (!['business_enquiry', 'booking_request', 'demo_booking'].includes(requestType)) {
-      throw new Error('Invalid request type');
-    }
+The request ID makes repeated submissions idempotent: a saved lead is not duplicated, completed emails are not resent, and an event with the request ID is recovered rather than duplicated. Failed or unconfigured integrations are recorded in the row; run `retryFailedIntegrations` from the Apps Script editor after correcting configuration to retry them safely. A `Sending` status is intentionally not retried automatically, to avoid duplicate email if execution stops during delivery; inspect that request manually before changing its status. A conflicting slot is emailed to WE PASS with `Conflict / Needs Rescheduling`; it is not automatically rescheduled. The website reports Sheets, business email, Calendar, and customer confirmation statuses separately. It never describes the preferred slot as confirmed.
 
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-    if (!sheet) throw new Error('Leads sheet was not found');
-    const headers = [
-      'Timestamp', 'Contact Person Name', 'Restaurant / Business Name',
-      'City', 'District', 'State', 'WhatsApp Number', 'Email Address',
-      'Notes / Requirements', 'Request Type'
-    ];
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(headers);
-    } else {
-      sheet.getRange(1, 10).setValue(headers[9]);
-    }
-    sheet.appendRow([
-      new Date(),
-      data.contactPersonName,
-      data.businessName,
-      data.city,
-      data.district,
-      data.state,
-      data.whatsappNumber,
-      data.email || '',
-      data.notes,
-      data.requestType || 'business_enquiry'
-    ]);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: true }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: false, error: 'Unable to save lead' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-```
-
-3. If the `Leads` sheet already exists, the handler sets the `Request Type` header in column J. Deploy or update the Apps Script as a **Web app**, choose **Execute as me**, and allow access to **Anyone** so the server endpoint can submit public enquiries. Copy the deployment URL ending in `/exec`.
-4. Set the deployed URL (not the spreadsheet URL or a placeholder) as `GOOGLE_APPS_SCRIPT_WEB_APP_URL` in the server environment, including production hosting, and restart/redeploy. The form cannot write to Google Sheets until this endpoint is configured. Do not use the service-account email as the endpoint or expose private credentials in client code.
-
-The UI reports success only after Apps Script returns `{ "success": true }`; failed submissions leave the form values in place so the visitor can retry.
+The deployment and Google authorization cannot be verified from the repository. After setup, submit an authorized test request and inspect the row, Gmail, and Calendar before treating the integration as live.
 
 ### 3. Initialize Database & Seed Demo Data
 ```bash

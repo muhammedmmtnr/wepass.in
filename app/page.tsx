@@ -65,11 +65,65 @@ const faqs = [
   },
 ];
 
+const navigationLinks = [
+  ['Home', '#top'],
+  ['About', '#about'],
+  ['Features', '#product'],
+  ['How It Works', '#how-it-works'],
+  ['Pricing', '#pricing'],
+  ['Contact', '#contact'],
+] as const;
+
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('#top');
   const [proofStats, setProofStats] = useState<ProofStats | null>(null);
   const [proofError, setProofError] = useState(false);
   const [activeQueueUrl, setActiveQueueUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const updateScrollState = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const scrolled = window.scrollY > 12;
+        setHeaderScrolled((current) => current === scrolled ? current : scrolled);
+      });
+    };
+
+    updateScrollState();
+    window.addEventListener('scroll', updateScrollState, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateScrollState);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
+    const sectionIds = ['home', 'about', 'product', 'how-it-works', 'pricing', 'contact'];
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSections = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
+        const active = visibleSections[0]?.target.id;
+        if (active) {
+          setActiveSection(active === 'home' ? '#top' : `#${active}`);
+        }
+      },
+      { rootMargin: '-88px 0px -88px 0px', threshold: 0 },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
   const phoneJourney = [
     {
       key: 'join',
@@ -388,34 +442,30 @@ export default function HomePage() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <main id="top" className="overflow-hidden bg-white text-[#17231D]">
-      <header className="home-header sticky top-0 z-50">
-        <div className="page-container mx-auto flex h-[76px] items-center lg:h-[88px]">
+    <main id="top" className="overflow-clip bg-white text-[#17231D]">
+      <header className={`home-header sticky top-0 z-50${headerScrolled ? ' is-scrolled' : ''}`}>
+        <div className="home-header-inner page-container mx-auto flex h-[76px] items-center lg:h-[88px]">
           <div className="home-nav-shell mx-auto flex w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
             <BrandLogo size="sm" />
 
             <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
-              {[
-                ['Home', '#top'],
-                ['About', '#about'],
-                ['Features', '#product'],
-                ['How It Works', '#how-it-works'],
-                ['Pricing', '#pricing'],
-                ['Contact', '#contact'],
-              ].map(([label, href], index) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-current={index === 0 ? 'page' : undefined}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold transition sm:px-3.5 ${
-                    index === 0
-                      ? 'bg-[#BDF5CF] text-[#17372A]'
-                      : 'text-[#3F5147] hover:bg-white/80 hover:text-[#087C50]'
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
+              {navigationLinks.map(([label, href]) => {
+                const isActive = activeSection === href;
+                return (
+                  <a
+                    key={label}
+                    href={href}
+                    aria-current={isActive ? 'location' : undefined}
+                    className={`rounded-full px-3 py-2 text-xs font-semibold transition sm:px-3.5 ${
+                      isActive
+                        ? 'bg-[#BDF5CF] text-[#17372A]'
+                        : 'text-[#3F5147] hover:bg-white/80 hover:text-[#087C50]'
+                    }`}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
             </nav>
 
             <div className="flex items-center gap-2">
@@ -441,15 +491,16 @@ export default function HomePage() {
         {mobileMenuOpen && (
           <nav id="home-mobile-navigation" aria-label="Mobile navigation" className="mobile-menu-panel page-container mx-auto pb-3 lg:hidden">
             <div className="rounded-2xl border border-white/80 bg-white/95 p-2 shadow-[0_16px_40px_rgba(20,54,38,0.12)] backdrop-blur-xl">
-              {[
-                ['Home', '#top'],
-                ['About WePass', '#about'],
-                ['Features', '#product'],
-                ['How It Works', '#how-it-works'],
-                ['Pricing', '#pricing'],
-                ['Contact', '#contact'],
-              ].map(([label, href]) => (
-                <a key={label} href={href} onClick={closeMenu} className="block rounded-xl px-3 py-3 text-sm font-medium text-[#263B30] transition hover:bg-[#E8F3EC]">
+              {navigationLinks.map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  onClick={closeMenu}
+                  aria-current={activeSection === href ? 'location' : undefined}
+                  className={`block rounded-xl px-3 py-3 text-sm font-medium transition hover:bg-[#E8F3EC] ${
+                    activeSection === href ? 'bg-[#E8F3EC] text-[#087C50]' : 'text-[#263B30]'
+                  }`}
+                >
                   {label}
                 </a>
               ))}
@@ -483,8 +534,8 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="mx-auto mt-4 max-w-[660px] text-sm font-medium leading-6 text-[#52625A] sm:mt-5 sm:text-base sm:leading-7">
-              Join restaurant queues, reserve your table and track your waiting time in real time.
-              <br className="hidden sm:block" /> Everything you need, right from your phone.
+              Join restaurant queues,track your waiting time in real time.
+              <br className="hidden sm:block" /> Everything you need.
             </p>
             <div className="mt-5 flex flex-col justify-center gap-2.5 sm:mt-6 sm:flex-row">
               <a href="#how-it-works" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#087C50] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#066641]">
@@ -611,7 +662,7 @@ export default function HomePage() {
                 Smarter Queue Management for a <span>Better Dining Experience.</span>
               </h2>
               <p className="home-about-description">
-                WePass helps restaurants manage queue flow and table operations, while guests follow their place in line from a mobile browser.
+                WePass helps restaurants manage queue flow and perations, while guests follow their place in line from a mobile browser.
               </p>
 
               <div className="home-about-stats" role="group" aria-label="Live WePass platform statistics">
@@ -642,7 +693,7 @@ export default function HomePage() {
                   Live platform statistics are temporarily unavailable.
                 </p>
               )}
-              <p className="home-about-stats-note">Live platform activity; guest and wait-time totals cover the last 30 days.</p>
+              <p className="home-about-stats-note">Live platform activity; guest and wait-time totals cover the last 7 days.</p>
 
               <Link href="#how-it-works" className="home-outline-button mt-7">
                 Learn More <ArrowRight className="h-4 w-4" />

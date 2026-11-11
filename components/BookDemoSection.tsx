@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   ArrowRight,
@@ -20,11 +20,15 @@ type DemoForm = {
   lastName: string;
   businessName: string;
   email: string;
+  businessType: string;
   whatsappNumber: string;
   city: string;
   district: string;
   state: string;
   notes: string;
+  preferredDemoDate: string;
+  preferredDemoTime: string;
+  demoDuration: string;
 };
 
 const initialForm: DemoForm = {
@@ -32,47 +36,104 @@ const initialForm: DemoForm = {
   lastName: '',
   businessName: '',
   email: '',
+  businessType: '',
   whatsappNumber: '',
   city: '',
   district: '',
   state: '',
   notes: '',
+  preferredDemoDate: '',
+  preferredDemoTime: '',
+  demoDuration: '30',
 };
+
+type DemoStatuses = {
+  sheets: string;
+  gmail: string;
+  calendar: string;
+  customerConfirmation: string;
+};
+
+type DemoSuccess = {
+  businessName: string;
+  preferredDemoDate: string;
+  preferredDemoTime: string;
+  demoDuration: string;
+  statuses: DemoStatuses;
+};
+
+function getIndiaClock() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
+  return {
+    date: `${part('year')}-${part('month')}-${part('day')}`,
+    hour: Number(part('hour')),
+    minute: Number(part('minute')),
+  };
+}
+
+function getMinimumIndiaTime(date: string) {
+  const now = getIndiaClock();
+  if (date !== now.date) return undefined;
+  const nextSlot = Math.floor((now.hour * 60 + now.minute) / 30 + 1) * 30;
+  if (nextSlot >= 24 * 60) return '23:59';
+  return `${String(Math.floor(nextSlot / 60)).padStart(2, '0')}:${String(nextSlot % 60).padStart(2, '0')}`;
+}
+
+function statusLabel(status: string) {
+  return status.replace(/_/g, ' ');
+}
 
 export default function BookDemoSection() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<DemoSuccess | null>(null);
   const [error, setError] = useState('');
+  const requestId = useRef<string | null>(null);
 
   const updateField = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
-    setSuccess(false);
+    requestId.current = null;
+    setSuccess(null);
     setError('');
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
-    setSuccess(false);
+    setSuccess(null);
     setError('');
 
     try {
-      const response = await fetch('/api/leads', {
+      requestId.current ??= crypto.randomUUID();
+      const response = await fetch('/api/book-demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contactPersonName: `${form.firstName.trim()} ${form.lastName.trim()}`.trim(),
+          name: `${form.firstName.trim()} ${form.lastName.trim()}`.trim(),
           businessName: form.businessName,
+          businessType: form.businessType,
           city: form.city,
           district: form.district,
           state: form.state,
-          whatsappNumber: form.whatsappNumber,
+          whatsapp: form.whatsappNumber,
           email: form.email,
-          notes: form.notes,
+          requirements: form.notes,
+          preferredDemoDate: form.preferredDemoDate,
+          preferredDemoTime: form.preferredDemoTime,
+          demoDuration: Number(form.demoDuration),
+          requestId: requestId.current,
           requestType: 'demo_booking',
         }),
       });
@@ -93,11 +154,32 @@ export default function BookDemoSection() {
         return;
       }
 
+      const statuses =
+        'statuses' in result && result.statuses && typeof result.statuses === 'object'
+          ? result.statuses as Partial<DemoStatuses>
+          : {};
+      if (statuses.sheets !== 'saved') {
+        setError('We could not verify that your request was saved. Please try again.');
+        return;
+      }
+
+      setSuccess({
+        businessName: form.businessName.trim(),
+        preferredDemoDate: form.preferredDemoDate,
+        preferredDemoTime: form.preferredDemoTime,
+        demoDuration: form.demoDuration,
+        statuses: {
+          sheets: statuses.sheets,
+          gmail: statuses.gmail ?? 'unknown',
+          calendar: statuses.calendar ?? 'unknown',
+          customerConfirmation: statuses.customerConfirmation ?? 'unknown',
+        },
+      });
+      requestId.current = null;
       setForm(initialForm);
-      setSuccess(true);
     } catch (submitError) {
       console.error('Demo booking request failed:', submitError);
-      setError('Connection failed. Your request was not submitted. Please try again.');
+      setError('We could not confirm the result of your request. Please try again; your request ID prevents duplicate processing.');
     } finally {
       setSubmitting(false);
     }
@@ -120,7 +202,18 @@ export default function BookDemoSection() {
           {success && (
             <div className={styles.success} role="status">
               <Check aria-hidden="true" />
-              <span>Your demo request has been submitted. The WePass team will follow up with you.</span>
+              <div className={styles.successDetails}>
+                <strong>Your WE PASS demo request has been received!</strong>
+                <span>Business: {success.businessName}</span>
+                <span>Requested date: {success.preferredDemoDate}</span>
+                <span>Requested time: {success.preferredDemoTime} IST</span>
+                <span>Duration: {success.demoDuration} minutes</span>
+                <strong>Appointment status: Pending Confirmation</strong>
+                <span>Sheets: {statusLabel(success.statuses.sheets)}</span>
+                <span>Business email: {statusLabel(success.statuses.gmail)}</span>
+                <span>Calendar: {statusLabel(success.statuses.calendar)}</span>
+                <span>Customer confirmation: {statusLabel(success.statuses.customerConfirmation)}</span>
+              </div>
             </div>
           )}
 
@@ -165,6 +258,19 @@ export default function BookDemoSection() {
                   autoComplete="organization"
                   placeholder="Your restaurant or business"
                   value={form.businessName}
+                  onChange={updateField}
+                  maxLength={200}
+                  required
+                />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="demo-business-type">Business type</label>
+                <input
+                  id="demo-business-type"
+                  name="businessType"
+                  type="text"
+                  placeholder="Restaurant, cafe, hotel..."
+                  value={form.businessType}
                   onChange={updateField}
                   maxLength={200}
                   required
@@ -247,6 +353,46 @@ export default function BookDemoSection() {
                   maxLength={200}
                   required
                 />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="demo-preferred-date">Preferred demo date</label>
+                <input
+                  id="demo-preferred-date"
+                  name="preferredDemoDate"
+                  type="date"
+                  min={getIndiaClock().date}
+                  value={form.preferredDemoDate}
+                  onChange={updateField}
+                  required
+                />
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="demo-preferred-time">Preferred demo time (IST)</label>
+                <input
+                  id="demo-preferred-time"
+                  name="preferredDemoTime"
+                  type="time"
+                  step={1800}
+                  min={getMinimumIndiaTime(form.preferredDemoDate)}
+                  value={form.preferredDemoTime}
+                  onChange={updateField}
+                  required
+                />
+                <small>Time slots are available every 30 minutes. Your slot is pending confirmation.</small>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="demo-duration">Preferred demo duration</label>
+                <select
+                  id="demo-duration"
+                  name="demoDuration"
+                  value={form.demoDuration}
+                  onChange={updateField}
+                  required
+                >
+                  <option value="30">30 minutes (default)</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">60 minutes</option>
+                </select>
               </div>
               <div className={`${styles.field} ${styles.fullWidth}`}>
                 <label htmlFor="demo-notes">Message</label>

@@ -243,7 +243,7 @@ export default function RegisterPage() {
 
           <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5 text-wepass-600" />
-            <span>Includes 30-day Free Trial of WePass PRO</span>
+            <span>Includes 7-day Free Trial of WePass PRO</span>
           </div>
         </div>
 

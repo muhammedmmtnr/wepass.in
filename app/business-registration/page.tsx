@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CheckCircle2, ArrowLeft, Building2 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
@@ -14,7 +14,18 @@ type LeadForm = {
   state: string;
   whatsappNumber: string;
   email: string;
+  businessType: string;
   notes: string;
+  preferredDemoDate: string;
+  preferredDemoTime: string;
+  demoDuration: string;
+};
+
+type LeadStatuses = {
+  sheets?: string;
+  gmail?: string;
+  calendar?: string;
+  customerConfirmation?: string;
 };
 
 const initialForm: LeadForm = {
@@ -25,7 +36,11 @@ const initialForm: LeadForm = {
   state: '',
   whatsappNumber: '',
   email: '',
+  businessType: '',
   notes: '',
+  preferredDemoDate: '',
+  preferredDemoTime: '',
+  demoDuration: '30',
 };
 
 const requiredFields: Array<keyof Omit<LeadForm, 'email'>> = [
@@ -46,8 +61,38 @@ const fieldLabels: Record<keyof LeadForm, string> = {
   state: 'State',
   whatsappNumber: 'WhatsApp number',
   email: 'Email address',
+  businessType: 'Business type',
   notes: 'Notes / requirements',
+  preferredDemoDate: 'Preferred demo date',
+  preferredDemoTime: 'Preferred demo time (IST)',
+  demoDuration: 'Preferred demo duration',
 };
+
+function getIndiaClock() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
+  return {
+    date: `${part('year')}-${part('month')}-${part('day')}`,
+    hour: Number(part('hour')),
+    minute: Number(part('minute')),
+  };
+}
+
+function getMinimumIndiaTime(date: string) {
+  const now = getIndiaClock();
+  if (date !== now.date) return undefined;
+  const nextSlot = Math.floor((now.hour * 60 + now.minute) / 30 + 1) * 30;
+  if (nextSlot >= 24 * 60) return '23:59';
+  return `${String(Math.floor(nextSlot / 60)).padStart(2, '0')}:${String(nextSlot % 60).padStart(2, '0')}`;
+}
 
 export default function BusinessRegistrationPage() {
   const [form, setForm] = useState<LeadForm>(initialForm);
@@ -55,9 +100,13 @@ export default function BusinessRegistrationPage() {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submittedAsDemo, setSubmittedAsDemo] = useState(false);
+  const [submittedDemoSlot, setSubmittedDemoSlot] = useState('');
+  const [submittedStatuses, setSubmittedStatuses] = useState<LeadStatuses>({});
+  const requestId = useRef<string | null>(null);
 
   const updateField = (field: keyof LeadForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+    requestId.current = null;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -72,6 +121,17 @@ export default function BusinessRegistrationPage() {
     if (missingField) {
       setError(`${fieldLabels[missingField]} is required.`);
       return;
+    }
+
+    if (isDemoBooking) {
+      if (!form.email.trim()) {
+        setError('Email address is required for a demo request.');
+        return;
+      }
+      if (!form.preferredDemoDate || !form.preferredDemoTime) {
+        setError('Choose a preferred demo date and time.');
+        return;
+      }
     }
 
     const digits = form.whatsappNumber.replace(/\D/g, '');
@@ -92,6 +152,7 @@ export default function BusinessRegistrationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          requestId: isDemoBooking ? (requestId.current ??= crypto.randomUUID()) : undefined,
           requestType: isDemoBooking ? 'demo_booking' : 'business_enquiry',
         }),
       });
@@ -104,6 +165,13 @@ export default function BusinessRegistrationPage() {
 
       setForm(initialForm);
       setSubmittedAsDemo(isDemoBooking);
+      setSubmittedDemoSlot(
+        isDemoBooking
+          ? `${form.preferredDemoDate} at ${form.preferredDemoTime} IST (${form.demoDuration} minutes)`
+          : ''
+      );
+      setSubmittedStatuses(isDemoBooking ? result.statuses ?? {} : {});
+      requestId.current = null;
       setSubmitted(true);
     } catch (submitError) {
       console.error('Business registration request failed:', submitError);
@@ -151,6 +219,17 @@ export default function BusinessRegistrationPage() {
                       : 'Thanks — your details have been saved.'}
                   </p>
                   <p className="mt-1">The WE PASS team will follow up with you.</p>
+                  {submittedAsDemo && (
+                    <p className="mt-1">
+                      Requested slot: {submittedDemoSlot}. Appointment status: Pending Confirmation.
+                    </p>
+                  )}
+                  {submittedAsDemo && (
+                    <p className="mt-1">
+                      Sheets: {submittedStatuses.sheets ?? 'unknown'} · Business email: {submittedStatuses.gmail ?? 'unknown'} ·
+                      {' '}Calendar: {submittedStatuses.calendar ?? 'unknown'} · Customer confirmation: {submittedStatuses.customerConfirmation ?? 'unknown'}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -194,6 +273,65 @@ export default function BusinessRegistrationPage() {
                     )}
                   </div>
                 ))}
+                <div>
+                  <label className={labelClassName} htmlFor="businessType">Business type</label>
+                  <input
+                    id="businessType"
+                    name="businessType"
+                    type="text"
+                    value={form.businessType}
+                    onChange={(event) => updateField('businessType', event.target.value)}
+                    placeholder="Restaurant, cafe, hotel..."
+                    maxLength={200}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName} htmlFor="preferredDemoDate">
+                    Preferred demo date
+                  </label>
+                  <input
+                    id="preferredDemoDate"
+                    name="preferredDemoDate"
+                    type="date"
+                    min={getIndiaClock().date}
+                    value={form.preferredDemoDate}
+                    onChange={(event) => updateField('preferredDemoDate', event.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label className={labelClassName} htmlFor="preferredDemoTime">
+                    Preferred demo time (IST)
+                  </label>
+                  <input
+                    id="preferredDemoTime"
+                    name="preferredDemoTime"
+                    type="time"
+                    step={1800}
+                    min={getMinimumIndiaTime(form.preferredDemoDate)}
+                    value={form.preferredDemoTime}
+                    onChange={(event) => updateField('preferredDemoTime', event.target.value)}
+                    className={inputClassName}
+                  />
+                  <p className="mt-1.5 text-xs text-slate-500">30-minute intervals; requested slots remain pending confirmation.</p>
+                </div>
+                <div>
+                  <label className={labelClassName} htmlFor="demoDuration">
+                    Preferred demo duration
+                  </label>
+                  <select
+                    id="demoDuration"
+                    name="demoDuration"
+                    value={form.demoDuration}
+                    onChange={(event) => updateField('demoDuration', event.target.value)}
+                    className={inputClassName}
+                  >
+                    <option value="30">30 minutes (default)</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">60 minutes</option>
+                  </select>
+                </div>
               </div>
 
               <div>

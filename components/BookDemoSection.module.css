@@ -128,7 +128,8 @@
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   min-width: 0;
   min-height: 2.85rem;
@@ -150,12 +151,14 @@
 }
 
 .field input:hover,
-.field textarea:hover {
+.field textarea:hover,
+.field select:hover {
   border-color: #b7d9c3;
 }
 
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field select:focus {
   border-color: #19a967;
   background: #fcfffd;
   box-shadow: 0 0 0 3px rgba(8, 189, 115, 0.13);
@@ -293,6 +296,20 @@
   flex: 0 0 auto;
   margin-top: 0.1rem;
   stroke-width: 3;
+}
+
+.successDetails {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.successDetails strong:first-child {
+  margin-bottom: 0.2rem;
+}
+
+.successDetails strong:nth-of-type(2) {
+  margin-top: 0.35rem;
 }
 
 .infoColumn {
