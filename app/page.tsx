@@ -15,6 +15,7 @@ import {
   Clock3,
   Gem,
   Handshake,
+  Home,
   MessageCircle,
   Menu,
   QrCode,
@@ -22,7 +23,9 @@ import {
   ShieldCheck,
   Smartphone,
   Timer,
+  Utensils,
   UsersRound,
+  UserRound,
   X,
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
@@ -812,46 +815,94 @@ export default function HomePage() {
                 <span><Check aria-hidden="true" /> Live queue status</span>
               </div>
             </div>
-            <div className="home-dashboard-preview" data-feature-reveal="dashboard" aria-label="WePass dashboard preview with live platform statistics">
+            <div className="home-dashboard-preview" data-feature-reveal="dashboard" role="region" aria-label="WePass dashboard preview with live platform statistics">
               <div className="home-dashboard-topbar">
-                <div className="flex items-center gap-2">
+                <div className="home-dashboard-brand">
                   <Image src="/brand/wepass-icon.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
                   <span>WePass</span>
                 </div>
-                <span className="home-dashboard-preview-label">Restaurant dashboard</span>
+                <div className="home-dashboard-topbar-meta">
+                  <span className="home-dashboard-preview-label">Restaurant workspace</span>
+                  <span className="home-dashboard-preview-scope">Platform overview</span>
+                </div>
               </div>
               <div className="home-dashboard-body">
-                <div className="home-dashboard-sidebar" aria-hidden="true">
-                  <span className="active">Overview</span><span>Queue</span><span>Tables</span><span>Reports</span>
-                </div>
+                <aside className="home-dashboard-sidebar" aria-hidden="true">
+                  <span className="home-dashboard-nav-item active"><Home /><span>Overview</span></span>
+                  <span className="home-dashboard-nav-item"><UsersRound /><span>Queue</span></span>
+                  <span className="home-dashboard-nav-item"><ChartNoAxesColumnIncreasing /><span>Reports</span></span>
+                  <span className="home-dashboard-nav-item"><Utensils /><span>Restaurant settings</span></span>
+                  <span className="home-dashboard-nav-item"><QrCode /><span>QR code</span></span>
+                  <span className="home-dashboard-nav-item"><UserRound /><span>Account profile</span></span>
+                </aside>
                 <div className="home-dashboard-main">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div><p className="text-sm font-bold text-[#17231D]">Queue overview</p><p className="mt-1 text-[10px] text-[#69766F]">Live platform activity</p></div>
-                    <Link href="/login" className="home-dashboard-action">Open dashboard <ArrowRight /></Link>
+                    <div>
+                      <p className="home-dashboard-heading">Platform overview</p>
+                      <p className="home-dashboard-subheading">Live activity from WePass restaurants</p>
+                    </div>
+                    <Link href="/dashboard" className="home-dashboard-action">Open dashboard <ArrowRight /></Link>
+                  </div>
+                  <div
+                    className={`home-dashboard-status${proofError ? ' is-unavailable' : ''}`}
+                    role={proofError ? 'status' : undefined}
+                  >
+                    <span aria-hidden="true" />
+                    {proofError
+                      ? 'Current platform statistics are unavailable'
+                      : 'Live totals from real, non-demo queue records'}
                   </div>
                   <div className="home-dashboard-metrics">
                     {[
-                      { label: 'Active restaurants', value: proofStats?.activeRestaurants.toLocaleString() ?? '—', Icon: UsersRound },
-                      { label: 'Parties waiting', value: proofStats?.partiesWaiting.toLocaleString() ?? '—', Icon: Clock3 },
-                      { label: 'Guests served', value: proofStats?.guestsServed.toLocaleString() ?? '—', Icon: Check },
-                      { label: 'Average wait', value: proofStats?.averageWaitMinutes == null ? '—' : `${proofStats.averageWaitMinutes} min`, Icon: Timer },
-                    ].map(({ label, value, Icon }) => (
-                      <div key={label}><span><Icon /></span><small>{label}</small><strong>{value}</strong></div>
+                      { label: 'Active restaurants', note: 'Currently active', value: proofStats?.activeRestaurants.toLocaleString() ?? '—', Icon: Building2, color: 'green' },
+                      { label: 'Parties waiting', note: 'Across active restaurants', value: proofStats?.partiesWaiting.toLocaleString() ?? '—', Icon: UsersRound, color: 'blue' },
+                      { label: 'Guests served', note: 'Last 30 days', value: proofStats?.guestsServed.toLocaleString() ?? '—', Icon: Check, color: 'purple' },
+                      { label: 'Average wait to seat', note: 'Last 30 days', value: proofStats?.averageWaitMinutes == null ? '—' : `${proofStats.averageWaitMinutes} min`, Icon: Timer, color: 'orange' },
+                    ].map(({ label, note, value, Icon, color }) => (
+                      <div className="home-dashboard-stat-card" key={label}>
+                        <span className={`home-dashboard-stat-icon ${color}`}><Icon /></span>
+                        <small>{label}</small>
+                        <strong>{value}</strong>
+                        <span className="home-dashboard-stat-note">{note}</span>
+                      </div>
                     ))}
                   </div>
-                  {proofError && (
-                    <p className="home-dashboard-metrics-status" role="status">
-                      Live platform figures are temporarily unavailable.
-                    </p>
-                  )}
                   <div className="home-dashboard-workspace">
                     <div className="home-dashboard-workspace-panel">
-                      <div><strong>Queue management</strong><span>Guest queue and status are managed in your account.</span></div>
-                      <span className="home-dashboard-workspace-icon"><QrCode /></span>
+                      <div className="home-dashboard-panel-heading">
+                        <div><strong>Queue overview</strong><span>Guest activity across active restaurants</span></div>
+                        <span className="home-dashboard-panel-badge">
+                          {proofStats ? `${proofStats.partiesWaiting.toLocaleString()} waiting` : 'Live queue'}
+                        </span>
+                      </div>
+                      <div className="home-dashboard-queue-state">
+                        <span className="home-dashboard-queue-icon"><UsersRound /></span>
+                        <strong>
+                          {proofError
+                            ? 'Queue activity unavailable'
+                            : proofStats
+                              ? proofStats.partiesWaiting === 0
+                                ? 'No parties waiting right now'
+                                : `${proofStats.partiesWaiting.toLocaleString()} parties waiting`
+                              : 'Loading live queue activity'}
+                        </strong>
+                        <span>
+                          {proofError
+                            ? 'Please try again later.'
+                            : 'Guest names and queue details are available to each restaurant in its dashboard.'}
+                        </span>
+                      </div>
                     </div>
                     <div className="home-dashboard-workspace-panel">
-                      <div><strong>Restaurant operations</strong><span>Manage tables, team access and restaurant details.</span></div>
-                      <span className="home-dashboard-workspace-icon"><Armchair /></span>
+                      <div className="home-dashboard-panel-heading">
+                        <div><strong>Restaurant tools</strong><span>Manage operations in your account</span></div>
+                        <span className="home-dashboard-workspace-icon"><Armchair /></span>
+                      </div>
+                      <div className="home-dashboard-tool-links">
+                        <Link href="/dashboard/tables"><Armchair />Tables<ArrowRight /></Link>
+                        <Link href="/dashboard/reports"><ChartNoAxesColumnIncreasing />Reports<ArrowRight /></Link>
+                        <Link href="/dashboard/qr"><QrCode />Restaurant QR<ArrowRight /></Link>
+                      </div>
                     </div>
                   </div>
                 </div>
