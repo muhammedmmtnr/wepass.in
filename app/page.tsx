@@ -10,10 +10,14 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  CircleCheck,
+  MapPin,
   Menu,
   QrCode,
   ShieldCheck,
   Smartphone,
+  TicketCheck,
+  Timer,
   UsersRound,
   X,
 } from 'lucide-react';
@@ -333,7 +337,7 @@ export default function HomePage() {
                 ['About', '#about'],
                 ['Features', '#product'],
                 ['How It Works', '#how-it-works'],
-                ['Pricing', '/business-registration'],
+                ['Pricing', '#pricing'],
                 ['Contact', '#contact'],
               ].map(([label, href], index) => (
                 <a
@@ -379,7 +383,7 @@ export default function HomePage() {
                 ['About WePass', '#about'],
                 ['Features', '#product'],
                 ['How It Works', '#how-it-works'],
-                ['Pricing', '/business-registration'],
+                ['Pricing', '#pricing'],
                 ['Contact', '#contact'],
               ].map(([label, href]) => (
                 <a key={label} href={href} onClick={closeMenu} className="block rounded-xl px-3 py-3 text-sm font-medium text-[#263B30] transition hover:bg-[#E8F3EC]">
@@ -394,7 +398,7 @@ export default function HomePage() {
         )}
       </header>
 
-      <section id="about" className="home-hero relative isolate overflow-hidden">
+      <section id="home" className="home-hero relative isolate overflow-hidden">
         <div className="home-hero-glow" aria-hidden="true" />
         <div className="home-hero-rings" aria-hidden="true"><span /><span /></div>
         <div className="page-container relative mx-auto pt-5 text-center sm:pt-8 lg:pt-10">
@@ -405,9 +409,9 @@ export default function HomePage() {
             </p>
             <h1 className="text-[clamp(2.6rem,6.6vw,4.7rem)] font-bold leading-[0.98] tracking-[-0.065em] text-[#182630]">
               <span className="home-heading-desktop">
-                Skip the Queue.
+                One account
                 <br />
-                <span className="text-[#07834F]">Enjoy Your Time.</span>
+                <span className="text-[#07834F]">For your restaurant.</span>
               </span>
               <span className="home-heading-mobile">
                 One account
@@ -434,54 +438,62 @@ export default function HomePage() {
               <article className="home-float-card home-booking-card">
                 <span className="home-card-icon"><QrCode className="h-5 w-5" /></span>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-sm font-bold text-[#17231D]">Restaurant queue</p>
-                  <p className="mt-1 text-xs text-[#69766F]">Scan to join from your browser</p>
-                  <p className="mt-2 inline-flex rounded-lg bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#237A50]">No app download</p>
+                  <p className="text-sm font-bold text-[#17231D]">Restaurant Booking</p>
+                  <p className="mt-1 text-xs text-[#69766F]">Queue token is created when you join.</p>
+                  <p className="mt-2 inline-flex rounded-lg bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#237A50]">Wait estimate updates live</p>
                 </div>
                 <div className="home-card-ticket"><span>we</span></div>
               </article>
               <article className="home-float-card home-feature-card">
-                <span className="home-card-icon"><Clock3 className="h-5 w-5" /></span>
+                <span className="home-card-icon"><Armchair className="h-5 w-5" /></span>
                 <div className="text-left">
-                  <p className="text-sm font-bold text-[#17231D]">Your time, in your hands</p>
-                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Follow your place while you wait.</p>
+                  <p className="text-sm font-bold text-[#17231D]">Table Availability</p>
+                  <p className="mt-1 text-xs leading-5 text-[#69766F]">See table status managed by the restaurant.</p>
                 </div>
               </article>
             </div>
 
-            <div className="home-product-preview relative z-10 mx-auto w-full max-w-[270px] text-left" aria-label="Preview of the WePass guest queue pass">
+            <div className="home-product-preview relative z-10 mx-auto w-full max-w-[270px] text-left" aria-label="Illustrative WePass guest queue pass">
               <div className="home-product-status">
+                <span className="home-phone-camera" aria-hidden="true" />
                 <span className="text-[9px] font-bold tracking-[0.12em] text-[#52635A]">WEPASS QUEUE PASS</span>
                 <span className="home-product-preview-label">PREVIEW</span>
               </div>
               <div className="home-product-content">
-                <div className="mb-4 flex items-center justify-center gap-2">
-                  <Image src="/brand/wepass-icon.png" alt="" width={27} height={27} className="h-7 w-7 rounded-lg object-cover" />
-                  <span className="text-base font-bold tracking-tight text-[#17231D]">WePass</span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="truncate text-sm font-bold text-[#17231D]">Your restaurant</h2>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#DDF5E8] px-2 py-1 text-[9px] font-bold text-[#087C50]"><span className="h-1.5 w-1.5 rounded-full bg-[#27B86F]" /> Queue pass</span>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="home-ticket-metric">
-                    <span>Queue token</span>
-                    <strong>Issued on join</strong>
-                  </div>
-                  <div className="home-ticket-metric">
-                    <span>Est. wait</span>
-                    <strong>Updates live</strong>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between rounded-xl bg-white px-3 py-2.5">
-                  <div>
-                    <p className="text-[10px] text-[#69766F]">Your position</p>
-                    <p className="mt-0.5 text-sm font-bold text-[#17231D]">Tracked live</p>
-                  </div>
-                  <UsersRound className="h-5 w-5 text-[#15935C]" />
-                </div>
-                <div className="mt-2 rounded-full bg-[#43CF83] px-4 py-2.5 text-center text-xs font-bold text-white">Track Live</div>
-                <p className="mt-2 text-center text-[9px] leading-4 text-[#77857D]">Your real ticket details appear after joining a restaurant queue.</p>
+                {activeQueueUrl ? (
+                  <iframe title="Your live WePass queue pass" src={activeQueueUrl} loading="lazy" />
+                ) : (
+                  <>
+                    <div className="home-phone-restaurant">
+                      <Image src="/brand/wepass-icon.png" alt="" width={28} height={28} className="h-7 w-7 rounded-lg object-cover" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-bold text-[#17231D]">Your restaurant</p>
+                        <p className="text-[9px] text-[#69766F]">Restaurant details appear after joining</p>
+                      </div>
+                    </div>
+                    <div className="home-phone-confirmation">
+                      <span className="home-phone-check"><Check className="h-4 w-4" /></span>
+                      <h2>You’re in the queue!</h2>
+                      <p>Thanks for joining. Keep this page open to follow your place in line.</p>
+                    </div>
+                    <div className="home-phone-token">
+                      <div><span>Queue token</span><strong>Assigned on join</strong></div>
+                      <div><span>Parties ahead</span><strong>Updates live</strong></div>
+                    </div>
+                    <div className="home-phone-details">
+                      <div><Armchair /><span>Table</span><strong>When ready</strong></div>
+                      <div><UsersRound /><span>Party size</span><strong>Your group</strong></div>
+                      <div><Clock3 /><span>Joined at</span><strong>When joined</strong></div>
+                    </div>
+                    <span className="home-phone-leave">Leave Queue</span>
+                    <div className="home-phone-tracking">
+                      <strong>Queue tracking</strong>
+                      <p>Your live status updates as your turn gets closer.</p>
+                      <span><i /> Status updates appear after joining</span>
+                    </div>
+                    <p className="home-phone-note">Illustrative preview. Real queue details come from your restaurant.</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -510,98 +522,8 @@ export default function HomePage() {
               <article className="home-float-card home-feature-card">
                 <span className="home-card-icon"><BellRing className="h-5 w-5" /></span>
                 <div className="text-left">
-                  <p className="text-sm font-bold text-[#17231D]">Table updates</p>
-                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Know when your restaurant calls your party.</p>
-                </div>
-              </article>
-            </div>
-          </div>
-          <div className="home-mobile-experience">
-            {activeQueueUrl ? (
-              <div className="home-mobile-live-pass">
-                <iframe title="Your live WePass queue pass" src={activeQueueUrl} loading="lazy" />
-              </div>
-            ) : (
-            <section className="home-mobile-pass mx-auto text-left" aria-label="Guest queue pass preview">
-              <div className="home-mobile-pass-brand">
-                <Image src="/brand/wepass-icon.png" alt="" width={28} height={28} className="h-7 w-7 rounded-lg object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-[#17231D]">Restaurant details</p>
-                  <p className="text-[10px] text-[#69766F]">Shown when you join a restaurant queue</p>
-                </div>
-                <span className="home-mobile-preview-label">Preview</span>
-              </div>
-
-              <div className="home-mobile-pass-confirmation">
-                <span className="home-mobile-check"><Check className="h-5 w-5" /></span>
-                <h2>You’re in the queue!</h2>
-                <p>Thanks for joining. Keep this page open to follow your place in line.</p>
-              </div>
-
-              <div className="home-mobile-pass-token">
-                <span>Queue token</span>
-                <strong>Assigned when you join</strong>
-                <div><span>Parties ahead</span><strong>Updates live</strong></div>
-              </div>
-
-              <div className="home-mobile-pass-details">
-                <div><Armchair /><span>Table</span><strong>When ready</strong></div>
-                <div><UsersRound /><span>Party size</span><strong>After joining</strong></div>
-                <div><Clock3 /><span>Joined at</span><strong>After joining</strong></div>
-              </div>
-
-              <button type="button" className="home-mobile-leave-button" disabled aria-disabled="true">
-                Leave Queue
-              </button>
-
-              <div className="home-mobile-tracking">
-                <div className="flex items-center justify-between gap-3">
-                  <strong>Queue tracking</strong>
-                  <span className="home-mobile-preview-label">Status updates
-                  </span>
-                </div>
-                <p>Your status and estimated wait appear here after you join.</p>
-              </div>
-              <p className="home-mobile-preview-note">Sample layout only. A real queue pass is created after you join a restaurant queue.</p>
-            </section>
-            )}
-
-            <div className="home-mobile-cards" aria-label="WePass features">
-              <article className="home-mobile-info-card">
-                <span className="home-card-icon"><QrCode className="h-5 w-5" /></span>
-                <div>
-                  <h3>Restaurant Booking</h3>
-                  <p>Queue token and estimated wait are shown after joining.</p>
-                </div>
-              </article>
-              <article className="home-mobile-info-card">
-                <span className="home-card-icon"><Armchair className="h-5 w-5" /></span>
-                <div>
-                  <h3>Table Availability</h3>
-                  <p>See your table details when the restaurant updates your queue.</p>
-                </div>
-              </article>
-              <article className="home-mobile-info-card home-mobile-stat-card">
-                <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
-                <div className="min-w-0 flex-1">
-                  <h3>Live Queue Statistics</h3>
-                  <div className="home-mobile-stats">
-                    {[
-                      ['Restaurants', proofStats?.activeRestaurants.toLocaleString() ?? '—'],
-                      ['Waiting', proofStats?.partiesWaiting.toLocaleString() ?? '—'],
-                      ['Served', proofStats?.guestsServed.toLocaleString() ?? '—'],
-                    ].map(([label, value]) => (
-                      <div key={label}><strong>{value}</strong><span>{label}</span></div>
-                    ))}
-                  </div>
-                  {proofError && <p className="mt-2 text-[10px] text-[#69766F]">Live statistics are temporarily unavailable.</p>}
-                </div>
-              </article>
-              <article className="home-mobile-info-card">
-                <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
-                <div>
-                  <h3>One Account for Restaurant</h3>
-                  <p>Manage queues, book tables &amp; more.</p>
+                  <p className="text-sm font-bold text-[#17231D]">One Account for Restaurant</p>
+                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Manage queues, book tables &amp; more.</p>
                 </div>
               </article>
             </div>
@@ -616,58 +538,84 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section aria-labelledby="india-campaign-heading" className="bg-[#064D33] py-14 text-white sm:py-20">
-        <div className="page-container mx-auto grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="max-w-xl">
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#00D98B] px-4 py-2 text-sm font-bold text-[#032D1D]">
-              <span aria-hidden="true">●</span> Restaurant owners · Across India
+      <section id="about" className="home-section home-about-section">
+        <div className="page-container mx-auto grid items-center gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+          <div>
+            <p className="home-eyebrow"><span /> About WePass</p>
+            <h2 className="home-section-title mt-4">Everything your restaurant needs, <span>in one platform.</span></h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-[#66736A] sm:text-base">
+              WePass simplifies restaurant operations and improves the customer experience through smart queue management and seamless table management.
             </p>
-            <h2 id="india-campaign-heading" className="mt-6 text-4xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">
-              Shorter waits. Happier guests. Coming to restaurants across India.
-            </h2>
-            <p className="mt-5 max-w-lg text-base leading-7 text-white/75">
-              WePass helps restaurants keep guests in the loop while they wait. Bring a calmer queue experience to your restaurant.
-            </p>
-            <Link href="/business-registration" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[#087C50] transition hover:bg-[#E8F3EC]">
-              Bring WePass to your restaurant <ArrowRight className="h-4 w-4" />
+            <ul className="home-check-list mt-7 grid gap-3 sm:grid-cols-2">
+              {[
+                'Smart queue management',
+                'Real-time queue tracking',
+                'Digital queue tokens',
+                'Table availability',
+                'Restaurant management',
+                'Better guest experiences',
+              ].map((item) => (
+                <li key={item}><Check />{item}</li>
+              ))}
+            </ul>
+            <Link href="/business-registration" className="home-outline-button mt-8">
+              Learn about WePass <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="flex items-end justify-center gap-3 sm:gap-6">
-            <Image
-              src="/brand/mascot.png"
-              alt="WePass mascot holding a scan-and-join queue pass"
-              width={420}
-              height={460}
-              className="w-[38%] max-w-[260px] rounded-3xl object-contain"
-            />
-            <Image
-              src="/brand/across-india-campaign.png"
-              alt="WePass campaign for restaurant owners across India, coming soon"
-              width={384}
-              height={512}
-              className="w-[50%] max-w-[320px] rounded-3xl object-cover shadow-[0_20px_60px_rgba(0,0,0,0.24)]"
-            />
+          <div className="home-dashboard-preview" aria-label="Illustrative WePass restaurant dashboard">
+            <div className="home-dashboard-topbar">
+              <div className="flex items-center gap-2">
+                <Image src="/brand/wepass-icon.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
+                <span>WePass</span>
+              </div>
+              <span className="home-dashboard-preview-label">Dashboard preview</span>
+            </div>
+            <div className="home-dashboard-body">
+              <div className="home-dashboard-sidebar" aria-hidden="true">
+                <span className="active">Overview</span><span>Queue</span><span>Tables</span><span>Reports</span>
+              </div>
+              <div className="home-dashboard-main">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div><p className="text-sm font-bold text-[#17231D]">Restaurant overview</p><p className="mt-1 text-[10px] text-[#69766F]">Your operations at a glance</p></div>
+                  <Link href="/login" className="home-dashboard-action">Open dashboard <ArrowRight /></Link>
+                </div>
+                <div className="home-dashboard-metrics">
+                  {[
+                    { label: 'Active restaurants', value: proofStats?.activeRestaurants.toLocaleString() ?? '—', Icon: UsersRound },
+                    { label: 'Parties waiting', value: proofStats?.partiesWaiting.toLocaleString() ?? '—', Icon: Clock3 },
+                    { label: 'Guests served', value: proofStats?.guestsServed.toLocaleString() ?? '—', Icon: Check },
+                  ].map(({ label, value, Icon }) => (
+                    <div key={label}><span><Icon /></span><small>{label}</small><strong>{value}</strong></div>
+                  ))}
+                </div>
+                <div className="home-dashboard-empty">
+                  <div className="flex items-center justify-between gap-3"><strong>Queue and table management</strong><span>Live in your account</span></div>
+                  <div className="home-dashboard-empty-state"><QrCode /><p>Sign in to view your restaurant’s queue, tables and customer details.</p></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="section-padding border-y border-[#E5ECE7] bg-white">
+      <section id="how-it-works" className="home-section home-steps-section">
         <div className="page-container mx-auto">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#237A50]">A better rhythm, from the first scan</p>
-            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-[#17231D] sm:text-5xl">Four small steps.<br />A much better wait.</h2>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="home-eyebrow justify-center"><span /> How It Works</p>
+            <h2 className="home-section-title mt-4">A simple 3-step process <span>for a smoother visit.</span></h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#69766F] sm:text-base">Choose a restaurant, join its digital queue and follow your turn from your phone.</p>
           </div>
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="home-step-grid mt-10 grid gap-4 md:grid-cols-3">
             {[
-              ['01', 'Scan', 'Guests scan the restaurant’s permanent QR code.'],
-              ['02', 'Join', 'Add a name, phone number and party size.'],
-              ['03', 'Track', 'Follow the queue and estimated wait on a phone.'],
-              ['04', 'Get seated', 'Confirm when called, then meet the host.'],
-            ].map(([number, title, description]) => (
-              <article key={number} className="border-t border-[#B8EBD0] pt-5">
-                <span className="font-mono text-xs font-semibold text-[#C9A858]">{number}</span>
-                <h3 className="mt-8 text-xl font-semibold tracking-tight text-[#17231D]">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#69766F]">{description}</p>
+              { Icon: QrCode, title: 'Choose Your Restaurant', description: 'Find and select the restaurant you want to visit.' },
+              { Icon: Smartphone, title: 'Join the Queue', description: 'Share your details and receive a unique queue token.' },
+              { Icon: Clock3, title: 'Track Your Turn', description: 'Follow your queue position and waiting status in real time.' },
+            ].map(({ Icon, title, description }, index) => (
+              <article key={title} className="home-step-card">
+                <span className="home-step-number">0{index + 1}</span>
+                <span className="home-step-icon"><Icon /></span>
+                <h3>{title}</h3>
+                <p>{description}</p>
               </article>
             ))}
           </div>
@@ -677,98 +625,109 @@ export default function HomePage() {
       <section id="product" className="section-padding bg-[#F8FAF8]">
         <div className="page-container mx-auto">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#237A50]">One experience, thoughtfully connected</p>
-            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-[#17231D] sm:text-5xl">Less waiting at the door.<br />More ease all around.</h2>
+            <p className="home-eyebrow justify-center"><span /> For every restaurant visit</p>
+            <h2 className="home-section-title mt-4">Dining made easier <span>with WePass.</span></h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#69766F] sm:text-base">Simple tools keep guests informed and help restaurant teams stay in control of the queue.</p>
           </div>
-          <div className="mt-14 grid gap-5 lg:grid-cols-3">
+          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                id: 'guest',
-                icon: Smartphone,
-                eyebrow: 'For guests',
-                title: 'The freedom to step away.',
-                description: 'Scan once, keep your place and get a live update when it’s time to return.',
-                points: ['No app to download', 'Live position and wait estimate', 'Simple arrival confirmation'],
-                href: '#how-it-works',
-                action: 'See how it works',
-                style: 'bg-[#DDF5E8]',
+                icon: QrCode,
+                title: 'Join Queue',
+                description: 'Join a restaurant queue digitally without waiting at the host stand.',
               },
               {
-                id: 'restaurants',
-                icon: UsersRound,
-                eyebrow: 'For the host team',
-                title: 'A calmer view of the queue.',
-                description: 'Keep guests, calls and table assignments organized from the host desk.',
-                points: ['Live queue and walk-ins', 'Table assignments at a glance', 'Recorded fairness exceptions'],
-                href: '/staff',
-                action: 'Sign in to host desk',
-                style: 'bg-[#F5EBD1]/60',
+                icon: Clock3,
+                title: 'Live Queue Tracking',
+                description: 'Follow your queue status as the restaurant updates your place in line.',
               },
               {
-                id: 'owners',
-                icon: Armchair,
-                eyebrow: 'For owners',
-                title: 'Operations in one place.',
-                description: 'Manage your restaurant setup, QR, team, tables and real operational reports.',
-                points: ['Permanent QR and menu', 'Staff roles and table setup', 'Queue analytics and reports'],
-                href: '/dashboard',
-                action: 'Sign in to owner portal',
-                style: 'bg-white',
+                icon: TicketCheck,
+                title: 'Digital Queue Token',
+                description: 'Receive a unique token when you join a restaurant queue.',
+              },
+              {
+                icon: Timer,
+                title: 'Estimated Wait',
+                description: 'See an estimated wait when the restaurant has current information available.',
+              },
+              {
+                icon: MapPin,
+                title: 'Restaurant Information',
+                description: 'Review restaurant details and queue information before your visit.',
+              },
+              {
+                icon: CircleCheck,
+                title: 'Easy Queue Management',
+                description: 'Keep your queue pass handy and manage your place from your phone.',
               },
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.id} id={item.id} className={`group flex min-h-[390px] flex-col rounded-[1.75rem] border border-[#E5ECE7] p-7 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(37,53,44,0.08)] sm:p-8 ${item.style}`}>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 text-[#237A50]"><Icon className="h-5 w-5" /></div>
-                  <p className="mt-8 text-xs font-bold uppercase tracking-[0.14em] text-[#69766F]">{item.eyebrow}</p>
-                  <h3 className="mt-2 text-2xl font-semibold leading-tight tracking-[-0.035em] text-[#17231D]">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[#66736A]">{item.description}</p>
-                  <ul className="mt-6 space-y-2.5">
-                    {item.points.map((point) => (
-                      <li key={point} className="flex items-center gap-2 text-xs font-medium text-[#425348]"><Check className="h-3.5 w-3.5 text-[#237A50]" />{point}</li>
-                    ))}
-                  </ul>
-                  <Link href={item.href} className="mt-auto inline-flex items-center gap-2 pt-8 text-sm font-semibold text-[#237A50]">
-                    {item.action}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                  </Link>
+                <article key={item.title} className="home-customer-feature">
+                  <span><Icon /></span>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
                 </article>
               );
             })}
           </div>
+          <div className="home-restaurant-feature">
+            <div className="home-restaurant-feature-copy">
+              <p className="home-eyebrow"><span /> Built for restaurant teams</p>
+              <h3>One powerful account. <span>Complete restaurant control.</span></h3>
+              <p>Bring day-to-day queue operations into one place, from guest management to tables and restaurant details.</p>
+              <ul className="home-check-list mt-6">
+                {['Restaurant dashboard and profile', 'Live queue and customer management', 'Digital token generation', 'Table availability and bookings', 'Waiting-time monitoring and analytics'].map((item) => <li key={item}><Check />{item}</li>)}
+              </ul>
+              <Link href="/login" className="home-outline-button mt-7">Explore restaurant dashboard <ArrowRight className="h-4 w-4" /></Link>
+            </div>
+            <div className="home-restaurant-feature-visual" aria-label="Live restaurant queue preview">
+              <div className="home-queue-preview-head"><div><strong>Current queue</strong><span>Live restaurant view</span></div><i><span /> Queue active</i></div>
+              <div className="home-queue-preview-empty">
+                <span><UsersRound /></span>
+                <strong>Your queue, at a glance</strong>
+                <p>Customer names, tokens and wait times appear here when guests join your live queue.</p>
+              </div>
+              <div className="home-queue-preview-footer"><span><Armchair /> Table availability</span><strong>Managed in your dashboard</strong></div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="section-padding bg-[#087C50] text-white">
-        <div className="page-container mx-auto grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#DCC684]">A queue guests can trust</p>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Every place matters.<br />Every turn counts.</h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/70">WePass groups parties by size and checks for earlier eligible guests before a later party is called. When a real exception is needed, staff record why.</p>
+      <section className="home-section home-benefits-section">
+        <div className="page-container mx-auto">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="home-eyebrow justify-center"><span /> Why choose WePass</p>
+            <h2 className="home-section-title mt-4">Better experiences for customers. <span>Smarter operations for restaurants.</span></h2>
           </div>
-          <div className="rounded-[1.75rem] border border-white/15 bg-white/[0.06] p-6 sm:p-8">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <p className="text-sm font-semibold">Fairness, built into the flow</p>
-                <p className="mt-1 text-xs text-white/55">Illustrative process</p>
-              </div>
-              <ShieldCheck className="h-5 w-5 text-[#DCC684]" />
-            </div>
-            <div className="mt-5 space-y-3">
-              {[
-                ['Earlier eligible party', 'Waiting'],
-                ['Next eligible party', 'Waiting'],
-                ['Call requested', 'Reason required'],
-              ].map(([description, status], index) => (
-                <div key={description} className={`flex items-center justify-between gap-3 rounded-xl p-3.5 ${index === 2 ? 'bg-white/10 ring-1 ring-[#DCC684]/40' : 'bg-white/[0.04]'}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-white/85">{description}</span>
-                  </div>
-                  <span className="text-[10px] font-medium text-white/55">{status}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-xs leading-5 text-white/60">An audited reason is required before the later party can be called.</p>
+          <div className="mt-9 grid gap-4 md:grid-cols-2">
+            <article className="home-benefit-card">
+              <span className="home-benefit-icon"><Smartphone /></span>
+              <h3>For customers</h3>
+              <p>Keep your visit moving without standing by the host desk.</p>
+              <ul>
+                <li><Check />Join a queue from your phone</li>
+                <li><Check />Follow real-time status updates</li>
+                <li><Check />Know your queue position and wait estimate</li>
+                <li><Check />Enjoy a more informed dining experience</li>
+              </ul>
+            </article>
+            <article className="home-benefit-card home-benefit-card-green">
+              <span className="home-benefit-icon"><ShieldCheck /></span>
+              <h3>For restaurants</h3>
+              <p>Give your team a clearer way to manage the guest flow.</p>
+              <ul>
+                <li><Check />Organize walk-ins and queue activity</li>
+                <li><Check />Manage tables and guest calls</li>
+                <li><Check />Keep an eye on table utilization</li>
+                <li><Check />Review queue activity and exceptions</li>
+              </ul>
+            </article>
           </div>
+          <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-5 text-[#69766F]">
+            WePass checks earlier eligible parties before a later party can be called. Staff record a reason when a queue exception is needed.
+          </p>
         </div>
       </section>
 
@@ -805,22 +764,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="restaurants" className="section-padding bg-[#F8FAF8]">
+      <section id="pricing" className="home-section home-pricing-section">
         <div className="page-container mx-auto">
-          <div className="rounded-[2rem] bg-[#DDF5E8] px-6 py-12 sm:px-12 sm:py-16 lg:flex lg:items-center lg:justify-between lg:gap-10">
-            <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#237A50]">For restaurants ready for a better flow</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-[#17231D] sm:text-5xl">Bring your restaurant into the future.</h2>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-[#66736A]">Tell us about your restaurant and the way your team works. We’ll help you find the right next step.</p>
+          <div className="home-pricing-card">
+            <div>
+              <p className="home-eyebrow"><span /> Pricing</p>
+              <h2 className="home-section-title mt-4">The right setup <span>starts with a conversation.</span></h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#66736A] sm:text-base">Tell us about your restaurant and what your team needs. Contact us for pricing details and a walkthrough tailored to your operation.</p>
             </div>
-            <div className="mt-8 flex shrink-0 flex-col gap-3 sm:flex-row lg:mt-0 lg:flex-col">
-              <Link href="/business-registration" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#237A50] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#087C50]">
-                Book Demo <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/register" className="inline-flex items-center justify-center rounded-full border border-[#B8EBD0] bg-white/70 px-6 py-3.5 text-sm font-semibold text-[#087C50] transition hover:bg-white">
-                Create an account
-              </Link>
-            </div>
+            <Link href="/business-registration" className="home-primary-button">
+              Ask about pricing <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="restaurants" className="home-final-cta">
+        <div className="page-container mx-auto">
+          <p className="home-eyebrow home-eyebrow-light justify-center"><span /> A better restaurant visit</p>
+          <h2>Make every restaurant visit smarter.</h2>
+          <p>Experience a simpler way to manage queues and restaurant visits with WePass.</p>
+          <div className="home-final-cta-actions">
+            <Link href="/business-registration" className="home-final-primary">Get Started <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="#how-it-works" className="home-final-secondary">Join Queue</Link>
           </div>
         </div>
       </section>
