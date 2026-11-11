@@ -7,18 +7,15 @@ import {
   ArrowRight,
   Armchair,
   BellRing,
+  Camera,
   Check,
   ChevronDown,
   Clock3,
-  CircleCheck,
-  Instagram,
-  MapPin,
   MessageCircle,
   Menu,
   QrCode,
   ShieldCheck,
   Smartphone,
-  TicketCheck,
   Timer,
   UsersRound,
   X,
@@ -564,37 +561,14 @@ export default function HomePage() {
               Learn about WePass <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="home-dashboard-preview" aria-label="Illustrative WePass restaurant dashboard">
-            <div className="home-dashboard-topbar">
-              <div className="flex items-center gap-2">
-                <Image src="/brand/wepass-icon.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
-                <span>WePass</span>
-              </div>
-              <span className="home-dashboard-preview-label">Dashboard preview</span>
-            </div>
-            <div className="home-dashboard-body">
-              <div className="home-dashboard-sidebar" aria-hidden="true">
-                <span className="active">Overview</span><span>Queue</span><span>Tables</span><span>Reports</span>
-              </div>
-              <div className="home-dashboard-main">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div><p className="text-sm font-bold text-[#17231D]">Restaurant overview</p><p className="mt-1 text-[10px] text-[#69766F]">Your operations at a glance</p></div>
-                  <Link href="/login" className="home-dashboard-action">Open dashboard <ArrowRight /></Link>
-                </div>
-                <div className="home-dashboard-metrics">
-                  {[
-                    { label: 'Active restaurants', value: proofStats?.activeRestaurants.toLocaleString() ?? '—', Icon: UsersRound },
-                    { label: 'Parties waiting', value: proofStats?.partiesWaiting.toLocaleString() ?? '—', Icon: Clock3 },
-                    { label: 'Guests served', value: proofStats?.guestsServed.toLocaleString() ?? '—', Icon: Check },
-                  ].map(({ label, value, Icon }) => (
-                    <div key={label}><span><Icon /></span><small>{label}</small><strong>{value}</strong></div>
-                  ))}
-                </div>
-                <div className="home-dashboard-empty">
-                  <div className="flex items-center justify-between gap-3"><strong>Queue and table management</strong><span>Live in your account</span></div>
-                  <div className="home-dashboard-empty-state"><QrCode /><p>Sign in to view your restaurant’s queue, tables and customer details.</p></div>
-                </div>
-              </div>
+          <div className="home-about-panel">
+            <span className="home-about-panel-icon"><QrCode /></span>
+            <p className="home-about-panel-label">One platform, two better experiences</p>
+            <h3>Less uncertainty for guests. <span>More clarity for your team.</span></h3>
+            <p className="home-about-panel-description">Guests follow their place from a mobile browser while restaurant teams manage queue activity from their account.</p>
+            <div className="home-about-panel-bottom">
+              <span><Smartphone />Guest queue pass</span>
+              <span><UsersRound />Restaurant controls</span>
             </div>
           </div>
         </div>
@@ -604,95 +578,182 @@ export default function HomePage() {
         <div className="page-container mx-auto">
           <div className="mx-auto max-w-3xl text-center">
             <p className="home-eyebrow justify-center"><span /> How It Works</p>
-            <h2 className="home-section-title mt-4">A simple 3-step process <span>for a smoother visit.</span></h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#69766F] sm:text-base">Choose a restaurant, join its digital queue and follow your turn from your phone.</p>
+            <h2 className="home-section-title mt-4">A simple 3-step process <span>for a smoother dining experience.</span></h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#69766F] sm:text-base">Scan, join, and follow your place in the queue—all from your phone.</p>
           </div>
-          <div className="home-step-grid mt-10 grid gap-4 md:grid-cols-3">
+          <div className="home-step-grid">
             {[
-              { Icon: QrCode, title: 'Choose Your Restaurant', description: 'Find and select the restaurant you want to visit.' },
-              { Icon: Smartphone, title: 'Join the Queue', description: 'Share your details and receive a unique queue token.' },
-              { Icon: Clock3, title: 'Track Your Turn', description: 'Follow your queue position and waiting status in real time.' },
-            ].map(({ Icon, title, description }, index) => (
-              <article key={title} className="home-step-card">
-                <span className="home-step-number">0{index + 1}</span>
-                <span className="home-step-icon"><Icon /></span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
+              {
+                Icon: QrCode,
+                title: 'Scan the QR code',
+                description: 'Scan the WePass QR code available at the restaurant.',
+                visual: 'scan',
+              },
+              {
+                Icon: Smartphone,
+                title: 'Join the queue',
+                description: 'Enter your details to join and receive your queue pass.',
+                visual: 'join',
+              },
+              {
+                Icon: BellRing,
+                title: 'Track your turn',
+                description: 'Check your live queue status and return when called.',
+                visual: 'track',
+              },
+            ].map(({ Icon, title, description, visual }, index) => (
+              <React.Fragment key={title}>
+                <article className={`home-step-card home-step-card-${visual}`}>
+                  <span className="home-step-number" aria-label={`Step ${index + 1}`}>{index + 1}</span>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                  <div className={`home-step-visual home-step-visual-${visual}`} aria-hidden="true">
+                    {visual === 'scan' && (
+                      <div className="home-step-qr-art">
+                        <span className="home-step-corner home-step-corner-tl" />
+                        <span className="home-step-corner home-step-corner-tr" />
+                        <span className="home-step-corner home-step-corner-bl" />
+                        <div className="home-step-qr-mark"><Icon /></div>
+                        <span className="home-step-corner home-step-corner-br" />
+                      </div>
+                    )}
+                    {visual === 'join' && (
+                      <div className="home-step-phone">
+                        <div className="home-step-phone-camera" />
+                        <div className="home-step-phone-brand">
+                          <Image src="/brand/wepass-icon.png" alt="" width={18} height={18} />
+                          <strong>WePass</strong>
+                        </div>
+                        <span className="home-step-phone-check"><Check /></span>
+                        <strong className="home-step-phone-title">You’re in the queue</strong>
+                        <span className="home-step-phone-token">Your queue pass</span>
+                        <span className="home-step-phone-status"><i /> Live status</span>
+                      </div>
+                    )}
+                    {visual === 'track' && (
+                      <div className="home-step-track-art">
+                        <div className="home-step-update">
+                          <span><Check /></span>
+                          <div><strong>Queue status</strong><small>Check your pass for updates</small></div>
+                        </div>
+                        <div className="home-step-table-art">
+                          <span className="home-step-chair home-step-chair-one" />
+                          <span className="home-step-chair home-step-chair-two" />
+                          <span className="home-step-chair home-step-chair-three" />
+                          <span className="home-step-chair home-step-chair-four" />
+                          <span className="home-step-tabletop"><Armchair /></span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </article>
+                {index < 2 && (
+                  <span className="home-step-connector" aria-hidden="true">
+                    <ArrowRight />
+                  </span>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="product" className="section-padding bg-[#F8FAF8]">
+      <section id="product" className="section-padding home-feature-section">
         <div className="page-container mx-auto">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="home-eyebrow justify-center"><span /> For every restaurant visit</p>
-            <h2 className="home-section-title mt-4">Dining made easier <span>with WePass.</span></h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#69766F] sm:text-base">Simple tools keep guests informed and help restaurant teams stay in control of the queue.</p>
+          <div className="home-feature-showcase">
+            <div className="home-feature-showcase-copy">
+              <p className="home-eyebrow"><span /> Powerful Features</p>
+              <h2 className="home-section-title mt-5">Smarter Queue <span>Management</span></h2>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-[#53665D] sm:text-base">
+                Everything your team needs to manage restaurant queues and give guests a clearer dining experience.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Link href="/business-registration" className="home-primary-button">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="#how-it-works" className="home-outline-button">
+                  Explore how it works
+                </Link>
+              </div>
+            </div>
+            <div className="home-dashboard-preview" aria-label="WePass dashboard preview with live platform statistics">
+              <div className="home-dashboard-topbar">
+                <div className="flex items-center gap-2">
+                  <Image src="/brand/wepass-icon.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
+                  <span>WePass</span>
+                </div>
+                <span className="home-dashboard-preview-label">Restaurant dashboard</span>
+              </div>
+              <div className="home-dashboard-body">
+                <div className="home-dashboard-sidebar" aria-hidden="true">
+                  <span className="active">Overview</span><span>Queue</span><span>Tables</span><span>Reports</span>
+                </div>
+                <div className="home-dashboard-main">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div><p className="text-sm font-bold text-[#17231D]">Queue overview</p><p className="mt-1 text-[10px] text-[#69766F]">Live platform activity</p></div>
+                    <Link href="/login" className="home-dashboard-action">Open dashboard <ArrowRight /></Link>
+                  </div>
+                  <div className="home-dashboard-metrics">
+                    {[
+                      { label: 'Active restaurants', value: proofStats?.activeRestaurants.toLocaleString() ?? '—', Icon: UsersRound },
+                      { label: 'Parties waiting', value: proofStats?.partiesWaiting.toLocaleString() ?? '—', Icon: Clock3 },
+                      { label: 'Guests served', value: proofStats?.guestsServed.toLocaleString() ?? '—', Icon: Check },
+                      { label: 'Average wait', value: proofStats?.averageWaitMinutes == null ? '—' : `${proofStats.averageWaitMinutes} min`, Icon: Timer },
+                    ].map(({ label, value, Icon }) => (
+                      <div key={label}><span><Icon /></span><small>{label}</small><strong>{value}</strong></div>
+                    ))}
+                  </div>
+                  {proofError && (
+                    <p className="home-dashboard-metrics-status" role="status">
+                      Live platform figures are temporarily unavailable.
+                    </p>
+                  )}
+                  <div className="home-dashboard-workspace">
+                    <div className="home-dashboard-workspace-panel">
+                      <div><strong>Queue management</strong><span>Guest queue and status are managed in your account.</span></div>
+                      <span className="home-dashboard-workspace-icon"><QrCode /></span>
+                    </div>
+                    <div className="home-dashboard-workspace-panel">
+                      <div><strong>Restaurant operations</strong><span>Manage tables, team access and restaurant details.</span></div>
+                      <span className="home-dashboard-workspace-icon"><Armchair /></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="home-feature-cards">
             {[
               {
-                icon: QrCode,
-                title: 'Join Queue',
-                description: 'Join a restaurant queue digitally without waiting at the host stand.',
-              },
-              {
                 icon: Clock3,
-                title: 'Live Queue Tracking',
-                description: 'Follow your queue status as the restaurant updates your place in line.',
+                title: 'Live Queue Overview',
+                description: 'Keep track of queue activity and guest status from your restaurant account.',
               },
               {
-                icon: TicketCheck,
-                title: 'Digital Queue Token',
-                description: 'Receive a unique token when you join a restaurant queue.',
+                icon: QrCode,
+                title: 'Digital Guest Pass',
+                description: 'Guests join and follow their queue from a mobile browser—no app download required.',
               },
               {
-                icon: Timer,
-                title: 'Estimated Wait',
-                description: 'See an estimated wait when the restaurant has current information available.',
+                icon: BellRing,
+                title: 'Guest Status Updates',
+                description: 'Guests can check their live queue page as the restaurant updates their status.',
               },
               {
-                icon: MapPin,
-                title: 'Restaurant Information',
-                description: 'Review restaurant details and queue information before your visit.',
-              },
-              {
-                icon: CircleCheck,
-                title: 'Easy Queue Management',
-                description: 'Keep your queue pass handy and manage your place from your phone.',
+                icon: Armchair,
+                title: 'Tables & Operations',
+                description: 'Coordinate table availability, queue flow and restaurant details in one account.',
               },
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.title} className="home-customer-feature">
+                <article key={item.title} className="home-product-feature-card">
                   <span><Icon /></span>
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
                 </article>
               );
             })}
-          </div>
-          <div className="home-restaurant-feature">
-            <div className="home-restaurant-feature-copy">
-              <p className="home-eyebrow"><span /> Built for restaurant teams</p>
-              <h3>One powerful account. <span>Complete restaurant control.</span></h3>
-              <p>Bring day-to-day queue operations into one place, from guest management to tables and restaurant details.</p>
-              <ul className="home-check-list mt-6">
-                {['Restaurant dashboard and profile', 'Live queue and customer management', 'Digital token generation', 'Table availability and bookings', 'Waiting-time monitoring and analytics'].map((item) => <li key={item}><Check />{item}</li>)}
-              </ul>
-              <Link href="/login" className="home-outline-button mt-7">Explore restaurant dashboard <ArrowRight className="h-4 w-4" /></Link>
-            </div>
-            <div className="home-restaurant-feature-visual" aria-label="Live restaurant queue preview">
-              <div className="home-queue-preview-head"><div><strong>Current queue</strong><span>Live restaurant view</span></div><i><span /> Queue active</i></div>
-              <div className="home-queue-preview-empty">
-                <span><UsersRound /></span>
-                <strong>Your queue, at a glance</strong>
-                <p>Customer names, tokens and wait times appear here when guests join your live queue.</p>
-              </div>
-              <div className="home-queue-preview-footer"><span><Armchair /> Table availability</span><strong>Managed in your dashboard</strong></div>
-            </div>
           </div>
         </div>
       </section>
@@ -894,7 +955,7 @@ export default function HomePage() {
                   rel="noopener noreferrer"
                   aria-label="WePass on Instagram"
                 >
-                  <Instagram aria-hidden="true" />
+                  <Camera aria-hidden="true" />
                 </a>
                 <a
                   href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
