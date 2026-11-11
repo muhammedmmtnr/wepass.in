@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  ArrowDownRight,
   ArrowRight,
   Armchair,
   BellRing,
@@ -58,6 +57,7 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [proofStats, setProofStats] = useState<ProofStats | null>(null);
   const [proofError, setProofError] = useState(false);
+  const [activeQueueUrl, setActiveQueueUrl] = useState<string | null>(null);
   const phoneJourney = [
     {
       key: 'join',
@@ -305,179 +305,311 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const activeQueueKey = Object.keys(window.localStorage).find((key) =>
+      key.startsWith('wepass_active_token_'),
+    );
+    if (!activeQueueKey) return;
+
+    const token = window.localStorage.getItem(activeQueueKey);
+    const slug = activeQueueKey.slice('wepass_active_token_'.length);
+    if (token && slug) {
+      setActiveQueueUrl(`/queue/${encodeURIComponent(token)}?slug=${encodeURIComponent(slug)}`);
+    }
+  }, []);
+
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <main id="top" className="overflow-hidden bg-white text-[#17231D]">
-      <header className="sticky top-0 z-50 border-b border-[#E5ECE7]/80 bg-white/90 backdrop-blur-xl">
-        <div className="page-container mx-auto flex h-[72px] items-center justify-between">
-          <BrandLogo size="md" />
+      <header className="home-header sticky top-0 z-50">
+        <div className="page-container mx-auto flex h-[76px] items-center">
+          <div className="home-nav-shell mx-auto flex w-full max-w-[1080px] items-center justify-between gap-3 px-4 sm:px-6">
+            <BrandLogo size="sm" />
 
-          <nav aria-label="Main navigation" className="hidden items-center gap-8 lg:flex">
-            {[
-              ['Product', '#product'],
-              ['How it works', '#how-it-works'],
-              ['Restaurants', '#restaurants'],
-              ['FAQ', '#faq'],
-            ].map(([label, href]) => (
-              <a key={href} href={href} className="text-sm font-medium text-[#69766F] transition hover:text-[#237A50]">
-                {label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="hidden items-center gap-3 lg:flex">
-            <Link href="/login" className="rounded-full px-4 py-2.5 text-sm font-semibold text-[#17231D] transition hover:bg-[#F3F6F3]">
-              Sign in
-            </Link>
-            <Link href="/business-registration" className="rounded-full bg-[#237A50] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#087C50]">
-              Book Demo
-            </Link>
-          </div>
-
-          <button
-            type="button"
-            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen((open) => !open)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#17231D] transition hover:bg-[#F3F6F3] lg:hidden"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-        {mobileMenuOpen && (
-          <nav aria-label="Mobile navigation" className="mobile-menu-panel border-t border-[#E5ECE7] bg-white px-4 py-4 shadow-lg lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-1">
+            <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
               {[
-                ['Product', '#product'],
-                ['How it works', '#how-it-works'],
-                ['Restaurants', '#restaurants'],
-                ['FAQ', '#faq'],
-              ].map(([label, href]) => (
-                <a key={href} href={href} onClick={closeMenu} className="rounded-xl px-3 py-3 text-sm font-medium text-[#17231D] hover:bg-[#F3F6F3]">
+                ['Home', '#top'],
+                ['About', '#about'],
+                ['Features', '#product'],
+                ['How It Works', '#how-it-works'],
+                ['Pricing', '/business-registration'],
+                ['Contact', '#contact'],
+              ].map(([label, href], index) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-current={index === 0 ? 'page' : undefined}
+                  className={`rounded-full px-3 py-2 text-xs font-semibold transition sm:px-3.5 ${
+                    index === 0
+                      ? 'bg-[#BDF5CF] text-[#17372A]'
+                      : 'text-[#3F5147] hover:bg-white/80 hover:text-[#087C50]'
+                  }`}
+                >
                   {label}
                 </a>
               ))}
-              <div className="mt-2 grid grid-cols-2 gap-3 border-t border-[#E5ECE7] pt-4">
-                <Link href="/login" onClick={closeMenu} className="rounded-full border border-[#E5ECE7] px-4 py-3 text-center text-sm font-semibold">
-                  Sign in
-                </Link>
-                <Link href="/business-registration" onClick={closeMenu} className="rounded-full bg-[#237A50] px-4 py-3 text-center text-sm font-semibold text-white">
-                  Book Demo
-                </Link>
-              </div>
+            </nav>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/business-registration"
+                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#A6F1B8] px-4 text-xs font-bold text-[#153528] transition hover:bg-[#8DE8A5] sm:px-5"
+              >
+                Get Started <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <button
+                type="button"
+                aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="home-mobile-navigation"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#17231D] transition hover:bg-white/80 lg:hidden"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+        {mobileMenuOpen && (
+          <nav id="home-mobile-navigation" aria-label="Mobile navigation" className="mobile-menu-panel page-container mx-auto pb-3 lg:hidden">
+            <div className="rounded-2xl border border-white/80 bg-white/95 p-2 shadow-[0_16px_40px_rgba(20,54,38,0.12)] backdrop-blur-xl">
+              {[
+                ['Home', '#top'],
+                ['About WePass', '#about'],
+                ['Features', '#product'],
+                ['How It Works', '#how-it-works'],
+                ['Pricing', '/business-registration'],
+                ['Contact', '#contact'],
+              ].map(([label, href]) => (
+                <a key={label} href={href} onClick={closeMenu} className="block rounded-xl px-3 py-3 text-sm font-medium text-[#263B30] transition hover:bg-[#E8F3EC]">
+                  {label}
+                </a>
+              ))}
+              <Link href="/login" onClick={closeMenu} className="mt-1 block rounded-xl border-t border-[#E8EEE9] px-3 py-3 text-sm font-semibold text-[#087C50]">
+                Restaurant sign in
+              </Link>
             </div>
           </nav>
         )}
       </header>
 
-      <section id="about" className="relative isolate overflow-hidden bg-white">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-[18rem] h-[34rem] w-[56rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(193,255,124,0.55)_0%,rgba(159,255,201,0.42)_38%,rgba(255,255,255,0)_72%)] blur-2xl sm:top-52 sm:h-[42rem] sm:w-[72rem]" />
-          <div className="absolute left-1/2 top-[31rem] h-[35rem] w-[35rem] -translate-x-1/2 rounded-full border border-[#237A50]/[0.06] sm:top-[25rem] sm:h-[42rem] sm:w-[42rem]" />
-          <div className="absolute left-1/2 top-[33rem] h-[29rem] w-[29rem] -translate-x-1/2 rounded-full border border-[#237A50]/[0.05] sm:top-[27rem] sm:h-[36rem] sm:w-[36rem]" />
-        </div>
-        <div className="page-container mx-auto pt-8 text-center sm:pt-14 lg:pt-16">
-          <div className="mx-auto max-w-[1120px]">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#B8EBD0] bg-white/85 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#087C50] shadow-sm sm:mb-5 sm:text-[11px]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#237A50]" />
-              The next generation of restaurant queues
+      <section id="about" className="home-hero relative isolate overflow-hidden">
+        <div className="home-hero-glow" aria-hidden="true" />
+        <div className="home-hero-rings" aria-hidden="true"><span /><span /></div>
+        <div className="page-container relative mx-auto pt-5 text-center sm:pt-8 lg:pt-10">
+          <div className="mx-auto max-w-[820px]">
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/55 px-3.5 py-1.5 text-[11px] font-semibold text-[#244636] backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-[#56D887] shadow-[0_0_0_5px_rgba(86,216,135,0.14)]" />
+              Smart Queue Solution
             </p>
-            <h1 className="text-[clamp(2.45rem,5.2vw,4.5rem)] font-semibold leading-[0.98] tracking-[-0.065em] text-[#17231D]">
-              Good food deserves <span className="font-serif font-medium italic text-[#237A50]">better waiting.</span>
+            <h1 className="text-[clamp(2.6rem,6.6vw,4.7rem)] font-bold leading-[0.98] tracking-[-0.065em] text-[#182630]">
+              <span className="home-heading-desktop">
+                Skip the Queue.
+                <br />
+                <span className="text-[#07834F]">Enjoy Your Time.</span>
+              </span>
+              <span className="home-heading-mobile">
+                One account
+                <br />
+                <span>For your restaurant.</span>
+              </span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-[#69766F] sm:mt-5 sm:text-base sm:leading-7 lg:text-lg">
-              Join the queue in seconds. Follow your place live. Get seated when your table is ready.
+            <p className="mx-auto mt-4 max-w-[660px] text-sm font-medium leading-6 text-[#52625A] sm:mt-5 sm:text-base sm:leading-7">
+              Join restaurant queues, reserve your table and track your waiting time in real time.
+              <br className="hidden sm:block" /> Everything you need, right from your phone.
             </p>
-            <div className="mt-5 flex flex-col justify-center gap-3 sm:mt-7 sm:flex-row">
-              <Link href="/business-registration" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#237A50] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(35,122,80,0.18)] transition hover:-translate-y-0.5 hover:bg-[#087C50]">
-                Get started <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a href="#product" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#B8EBD0] bg-white/90 px-7 py-3.5 text-sm font-semibold text-[#087C50] transition hover:bg-[#E8F3EC]">
-                Explore WePass <ArrowDownRight className="h-4 w-4" />
+            <div className="mt-5 flex flex-col justify-center gap-2.5 sm:mt-6 sm:flex-row">
+              <a href="#how-it-works" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#087C50] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#066641]">
+                Join Queue <ArrowRight className="h-4 w-4" />
+              </a>
+              <a href="#product" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#168353] bg-white/55 px-6 py-3 text-sm font-bold text-[#17372A] transition hover:bg-white">
+                Explore WePass
               </a>
             </div>
           </div>
 
-          <div className="hero-stage relative mx-auto mt-2 flex w-full max-w-[1040px] items-end justify-center sm:mt-6">
-            {[
-              { label: 'Queue joined', detail: 'Your place is saved', className: 'left-[4%] top-28', icon: <Check className="h-4 w-4" />, tone: 'text-[#087C50]' },
-              { label: 'Live queue', detail: 'Follow your place', className: 'right-[4%] top-32', icon: <BellRing className="h-4 w-4 text-[#C9A858]" />, tone: 'text-[#17231D]' },
-              { label: 'Your table is ready!', detail: 'Head to the restaurant', className: 'left-[7%] bottom-28', icon: <BellRing className="h-4 w-4 text-[#087C50]" />, tone: 'text-[#087C50]' },
-              { label: 'It’s your turn', detail: 'Please arrive within 10 minutes', className: 'right-[7%] bottom-24', icon: <Clock3 className="h-4 w-4 text-[#087C50]" />, tone: 'text-[#17231D]' },
-            ].map((note) => (
-              <div key={note.label} className={`absolute z-10 hidden rounded-2xl border border-white/90 bg-white/90 p-4 text-left shadow-[0_8px_24px_rgba(32,57,40,0.1)] lg:block ${note.className}`}>
-                <div className={`flex items-center gap-2 text-xs font-semibold ${note.tone}`}>
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DDF5E8]">{note.icon}</span>
-                  {note.label}
-                </div>
-                <p className="mt-1 pl-9 text-[11px] text-[#69766F]">{note.detail}</p>
-              </div>
-            ))}
-
-            <div className="hero-mobile-preview" aria-hidden="true">
-              <div className="hero-preview-header">
-                <span className="hero-preview-mark">
-                  <Image src="/brand/wepass-icon.png" alt="" width={32} height={32} className="h-8 w-8 rounded-lg object-cover" />
-                </span>
+          <div className="home-hero-stage relative mx-auto mt-4 grid w-full max-w-[1080px] items-center gap-4 pb-8 sm:mt-6 sm:pb-10 lg:mt-2 lg:grid-cols-[1fr_270px_1fr] lg:gap-6 lg:pb-0">
+            <div className="home-hero-side home-hero-side-left">
+              <article className="home-float-card home-booking-card">
+                <span className="home-card-icon"><QrCode className="h-5 w-5" /></span>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#69766F]">WePass guest pass</p>
-                  <p className="mt-0.5 text-sm font-semibold text-[#17231D]">Your queue, live</p>
+                  <p className="text-sm font-bold text-[#17231D]">Restaurant queue</p>
+                  <p className="mt-1 text-xs text-[#69766F]">Scan to join from your browser</p>
+                  <p className="mt-2 inline-flex rounded-lg bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#237A50]">No app download</p>
                 </div>
-                <span className="hero-preview-live">Web app</span>
+                <div className="home-card-ticket"><span>we</span></div>
+              </article>
+              <article className="home-float-card home-feature-card">
+                <span className="home-card-icon"><Clock3 className="h-5 w-5" /></span>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-[#17231D]">Your time, in your hands</p>
+                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Follow your place while you wait.</p>
+                </div>
+              </article>
+            </div>
+
+            <div className="home-product-preview relative z-10 mx-auto w-full max-w-[270px] text-left" aria-label="Preview of the WePass guest queue pass">
+              <div className="home-product-status">
+                <span className="text-[9px] font-bold tracking-[0.12em] text-[#52635A]">WEPASS QUEUE PASS</span>
+                <span className="home-product-preview-label">PREVIEW</span>
               </div>
-              <div className="hero-preview-ticket">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#69766F]">Queue pass token</p>
-                  <span className="hero-preview-status">After joining</span>
+              <div className="home-product-content">
+                <div className="mb-4 flex items-center justify-center gap-2">
+                  <Image src="/brand/wepass-icon.png" alt="" width={27} height={27} className="h-7 w-7 rounded-lg object-cover" />
+                  <span className="text-base font-bold tracking-tight text-[#17231D]">WePass</span>
                 </div>
-                <p className="mt-2 inline-flex rounded-xl border border-[#B8EBD0] bg-[#E8F3EC] px-4 py-1.5 font-mono text-2xl font-bold tracking-[0.12em] text-[#237A50]">— — —</p>
-                <div className="mt-3 border-t border-[#E8EEE9] pt-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#69766F]">Your current position</p>
-                  <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-4xl font-semibold tracking-[-0.06em] text-[#17231D]">#—</span>
-                    <span className="text-sm font-medium text-[#69766F]">in line</span>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="truncate text-sm font-bold text-[#17231D]">Your restaurant</h2>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#DDF5E8] px-2 py-1 text-[9px] font-bold text-[#087C50]"><span className="h-1.5 w-1.5 rounded-full bg-[#27B86F]" /> Queue pass</span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="home-ticket-metric">
+                    <span>Queue token</span>
+                    <strong>Issued on join</strong>
                   </div>
-                  <p className="mt-1 text-xs font-medium text-[#237A50]">Party size — <span className="px-1 text-[#B6C2BA]">·</span> Table group —</p>
+                  <div className="home-ticket-metric">
+                    <span>Est. wait</span>
+                    <strong>Updates live</strong>
+                  </div>
                 </div>
-                <div className="hero-preview-steps">
-                  <span><UsersRound className="h-4 w-4" /><strong>—</strong> ahead</span>
-                  <span><Clock3 className="h-4 w-4" /><strong>—</strong> wait</span>
+                <div className="mt-2 flex items-center justify-between rounded-xl bg-white px-3 py-2.5">
+                  <div>
+                    <p className="text-[10px] text-[#69766F]">Your position</p>
+                    <p className="mt-0.5 text-sm font-bold text-[#17231D]">Tracked live</p>
+                  </div>
+                  <UsersRound className="h-5 w-5 text-[#15935C]" />
                 </div>
-                <p className="mt-3 text-[10px] leading-4 text-[#89958E]">Your real pass details appear here after you join a restaurant queue.</p>
+                <div className="mt-2 rounded-full bg-[#43CF83] px-4 py-2.5 text-center text-xs font-bold text-white">Track Live</div>
+                <p className="mt-2 text-center text-[9px] leading-4 text-[#77857D]">Your real ticket details appear after joining a restaurant queue.</p>
               </div>
             </div>
 
-            <div aria-hidden="true" className="hero-phone relative z-10 mx-auto w-[min(100%,320px)]">
-              <div className="overflow-hidden rounded-[2.2rem] bg-[#EEF6F1]">
-                <div className="flex h-9 items-center justify-center bg-[#064D33]">
-                  <div className="h-3.5 w-24 rounded-full bg-white/10" />
-                </div>
-                <div className="px-4 pb-5 pt-3">
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-full bg-white/70 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(28,52,42,0.04)]">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#DDF5E8] text-[#237A50]">
-                        <Smartphone className="h-4 w-4" />
-                      </div>
-                      <div className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-[#3B5A4E]">WePass</div>
+            <div className="home-hero-side home-hero-side-right">
+              <article className="home-float-card home-stats-card">
+                <div className="flex items-start gap-3">
+                  <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="text-sm font-bold text-[#17231D]">Live Queue Statistics</p>
+                    <div className="mt-4 grid grid-cols-3 divide-x divide-[#E5ECE7]">
+                      {[
+                        ['Restaurants', proofStats?.activeRestaurants.toLocaleString() ?? '—'],
+                        ['Waiting', proofStats?.partiesWaiting.toLocaleString() ?? '—'],
+                        ['Served', proofStats?.guestsServed.toLocaleString() ?? '—'],
+                      ].map(([label, value]) => (
+                        <div key={label} className="px-2 first:pl-0 last:pr-0">
+                          <p className="text-lg font-bold leading-none text-[#17231D]">{value}</p>
+                          <p className="mt-1.5 text-[10px] text-[#69766F]">{label}</p>
+                        </div>
+                      ))}
                     </div>
-                    <div className="rounded-full bg-[#DDF5E8] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[#087C50]">Live</div>
-                  </div>
-
-                  <div className="relative h-[440px] overflow-hidden rounded-[2rem] border border-[#D7E2DB] bg-[#F3F8F4] p-4">
-                    <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#ECF7F1] to-transparent" />
-                    <div className="relative z-10 h-full">
-                      {phoneJourney[0].screen}
-                    </div>
+                    {proofError && <p className="mt-2 text-[10px] text-[#69766F]">Live statistics are temporarily unavailable.</p>}
                   </div>
                 </div>
-              </div>
+              </article>
+              <article className="home-float-card home-feature-card">
+                <span className="home-card-icon"><BellRing className="h-5 w-5" /></span>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-[#17231D]">Table updates</p>
+                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Know when your restaurant calls your party.</p>
+                </div>
+              </article>
             </div>
           </div>
-          <div className="hero-benefits mx-auto -mt-2 flex max-w-xl flex-wrap justify-center gap-x-5 gap-y-2 pb-10 text-[11px] font-medium text-[#69766F] sm:gap-x-7 sm:pb-14 sm:text-xs">
+          <div className="home-mobile-experience">
+            {activeQueueUrl ? (
+              <div className="home-mobile-live-pass">
+                <iframe title="Your live WePass queue pass" src={activeQueueUrl} loading="lazy" />
+              </div>
+            ) : (
+            <section className="home-mobile-pass mx-auto text-left" aria-label="Guest queue pass preview">
+              <div className="home-mobile-pass-brand">
+                <Image src="/brand/wepass-icon.png" alt="" width={28} height={28} className="h-7 w-7 rounded-lg object-cover" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-[#17231D]">Restaurant details</p>
+                  <p className="text-[10px] text-[#69766F]">Shown when you join a restaurant queue</p>
+                </div>
+                <span className="home-mobile-preview-label">Preview</span>
+              </div>
+
+              <div className="home-mobile-pass-confirmation">
+                <span className="home-mobile-check"><Check className="h-5 w-5" /></span>
+                <h2>You’re in the queue!</h2>
+                <p>Thanks for joining. Keep this page open to follow your place in line.</p>
+              </div>
+
+              <div className="home-mobile-pass-token">
+                <span>Queue token</span>
+                <strong>Assigned when you join</strong>
+                <div><span>Parties ahead</span><strong>Updates live</strong></div>
+              </div>
+
+              <div className="home-mobile-pass-details">
+                <div><Armchair /><span>Table</span><strong>When ready</strong></div>
+                <div><UsersRound /><span>Party size</span><strong>After joining</strong></div>
+                <div><Clock3 /><span>Joined at</span><strong>After joining</strong></div>
+              </div>
+
+              <button type="button" className="home-mobile-leave-button" disabled aria-disabled="true">
+                Leave Queue
+              </button>
+
+              <div className="home-mobile-tracking">
+                <div className="flex items-center justify-between gap-3">
+                  <strong>Queue tracking</strong>
+                  <span className="home-mobile-preview-label">Status updates
+                  </span>
+                </div>
+                <p>Your status and estimated wait appear here after you join.</p>
+              </div>
+              <p className="home-mobile-preview-note">Sample layout only. A real queue pass is created after you join a restaurant queue.</p>
+            </section>
+            )}
+
+            <div className="home-mobile-cards" aria-label="WePass features">
+              <article className="home-mobile-info-card">
+                <span className="home-card-icon"><QrCode className="h-5 w-5" /></span>
+                <div>
+                  <h3>Restaurant Booking</h3>
+                  <p>Queue token and estimated wait are shown after joining.</p>
+                </div>
+              </article>
+              <article className="home-mobile-info-card">
+                <span className="home-card-icon"><Armchair className="h-5 w-5" /></span>
+                <div>
+                  <h3>Table Availability</h3>
+                  <p>See your table details when the restaurant updates your queue.</p>
+                </div>
+              </article>
+              <article className="home-mobile-info-card home-mobile-stat-card">
+                <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
+                <div className="min-w-0 flex-1">
+                  <h3>Live Queue Statistics</h3>
+                  <div className="home-mobile-stats">
+                    {[
+                      ['Restaurants', proofStats?.activeRestaurants.toLocaleString() ?? '—'],
+                      ['Waiting', proofStats?.partiesWaiting.toLocaleString() ?? '—'],
+                      ['Served', proofStats?.guestsServed.toLocaleString() ?? '—'],
+                    ].map(([label, value]) => (
+                      <div key={label}><strong>{value}</strong><span>{label}</span></div>
+                    ))}
+                  </div>
+                  {proofError && <p className="mt-2 text-[10px] text-[#69766F]">Live statistics are temporarily unavailable.</p>}
+                </div>
+              </article>
+              <article className="home-mobile-info-card">
+                <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
+                <div>
+                  <h3>One Account for Restaurant</h3>
+                  <p>Manage queues, book tables &amp; more.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div className="home-hero-benefits mx-auto flex max-w-xl flex-wrap justify-center gap-x-5 gap-y-2 pb-7 text-[11px] font-medium text-[#506258] sm:gap-x-7 sm:pb-9 sm:text-xs">
             {['No guest app required', 'One permanent QR', 'Live queue updates'].map((item) => (
               <span key={item} className="inline-flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 text-[#237A50]" /> {item}
+                <Check className="h-3.5 w-3.5 text-[#12834F]" /> {item}
               </span>
             ))}
           </div>

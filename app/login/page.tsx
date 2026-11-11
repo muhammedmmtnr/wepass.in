@@ -128,7 +128,7 @@ export default function LoginPage() {
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
-              </main>
+              </div>
             </div>
 
             <button
@@ -147,7 +147,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </section>
-      </div>
+      </main>
     </div>
   );
 }

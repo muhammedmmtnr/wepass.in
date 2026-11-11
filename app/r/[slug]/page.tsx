@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -348,10 +347,12 @@ export default function RestaurantLandingPage({
                       type="button"
                       aria-expanded={customPartyOpen}
                       onClick={() => {
-                        setCustomPartyOpen((open) => {
-                          if (!open) setCustomPartySize(partySize > 4 ? String(partySize) : '');
-                          return !open;
-                        });
+                        if (!customPartyOpen) {
+                          const initialSize = partySize > 4 ? partySize : 5;
+                          setCustomPartySize(String(initialSize));
+                          setPartySize(initialSize);
+                        }
+                        setCustomPartyOpen(!customPartyOpen);
                       }}
                       className={`min-h-10 rounded-xl border px-3.5 text-xs font-semibold transition ${
                         customPartyOpen
