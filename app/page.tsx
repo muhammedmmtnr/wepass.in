@@ -7,13 +7,18 @@ import {
   ArrowRight,
   Armchair,
   BellRing,
+  Building2,
   Camera,
+  ChartNoAxesColumnIncreasing,
   Check,
   ChevronDown,
   Clock3,
+  Gem,
+  Handshake,
   MessageCircle,
   Menu,
   QrCode,
+  Rocket,
   ShieldCheck,
   Smartphone,
   Timer,
@@ -21,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
+import BookDemoSection from '@/components/BookDemoSection';
 
 type ProofStats = {
   activeRestaurants: number;
@@ -321,13 +327,68 @@ export default function HomePage() {
     }
   }, []);
 
+  useEffect(() => {
+    const sections = ['#about', '#product'].flatMap((selector) => {
+      const section = document.querySelector<HTMLElement>(selector);
+      if (!section) return [];
+
+      const elements = Array.from(
+        section.querySelectorAll<HTMLElement>(
+          selector === '#about' ? '[data-about-reveal]' : '[data-feature-reveal]',
+        ),
+      );
+      return elements.length > 0 ? [{ section, elements }] : [];
+    });
+    const elements = sections.flatMap(({ elements: sectionElements }) => sectionElements);
+    if (elements.length === 0) return;
+
+    const revealImmediately = () => {
+      elements.forEach((element) => element.classList.add('is-visible'));
+    };
+
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      revealImmediately();
+      return;
+    }
+
+    sections.forEach(({ section }) => {
+      section.classList.add(
+        section.id === 'about' ? 'home-about-motion-ready' : 'home-feature-motion-ready',
+      );
+    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.14, rootMargin: '0px 0px -36px 0px' },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => {
+      observer.disconnect();
+      sections.forEach(({ section }) => {
+        section.classList.remove(
+          section.id === 'about' ? 'home-about-motion-ready' : 'home-feature-motion-ready',
+        );
+      });
+    };
+  }, []);
+
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <main id="top" className="overflow-hidden bg-white text-[#17231D]">
       <header className="home-header sticky top-0 z-50">
-        <div className="page-container mx-auto flex h-[76px] items-center">
-          <div className="home-nav-shell mx-auto flex w-full max-w-[1080px] items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="page-container mx-auto flex h-[76px] items-center lg:h-[88px]">
+          <div className="home-nav-shell mx-auto flex w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
             <BrandLogo size="sm" />
 
             <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
@@ -355,12 +416,12 @@ export default function HomePage() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Link
-                href="/business-registration"
-                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#A6F1B8] px-4 text-xs font-bold text-[#153528] transition hover:bg-[#8DE8A5] sm:px-5"
+              <a
+                href="#book-demo"
+                className="home-demo-nav-button inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#A6F1B8] px-4 text-xs font-bold text-[#153528] transition hover:-translate-y-0.5 hover:bg-[#8DE8A5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#237A50] focus-visible:ring-offset-2 sm:px-5"
               >
-                Get Started <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+                Book a Demo <ArrowRight className="h-3.5 w-3.5" />
+              </a>
               <button
                 type="button"
                 aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -401,21 +462,21 @@ export default function HomePage() {
         <div className="home-hero-glow" aria-hidden="true" />
         <div className="home-hero-rings" aria-hidden="true"><span /><span /></div>
         <div className="page-container relative mx-auto pt-5 text-center sm:pt-8 lg:pt-10">
-          <div className="mx-auto max-w-[820px]">
-            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/55 px-3.5 py-1.5 text-[11px] font-semibold text-[#244636] backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-[#56D887] shadow-[0_0_0_5px_rgba(86,216,135,0.14)]" />
+          <div className="home-hero-copy mx-auto max-w-[900px]">
+            <p className="home-hero-eyebrow mb-3 inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/55 px-3.5 py-1.5 text-[11px] font-semibold text-[#244636] backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-[#56D887] shadow-[0_0_0_5px_rgba(86,216,135,0.14)]" aria-hidden="true" />
               Smart Queue Solution
             </p>
-            <h1 className="text-[clamp(2.6rem,6.6vw,4.7rem)] font-bold leading-[0.98] tracking-[-0.065em] text-[#182630]">
+            <h1 className="home-hero-heading text-[clamp(2.6rem,6.6vw,4.7rem)] font-bold leading-[0.98] tracking-[-0.065em] text-[#182630]">
               <span className="home-heading-desktop">
                 One account
                 <br />
-                <span className="text-[#07834F]">For your restaurant.</span>
+                <span className="home-heading-accent">For your restaurant.</span>
               </span>
               <span className="home-heading-mobile">
                 One account
                 <br />
-                <span>For your restaurant.</span>
+                <span className="home-heading-accent">For your restaurant.</span>
               </span>
             </h1>
             <p className="mx-auto mt-4 max-w-[660px] text-sm font-medium leading-6 text-[#52625A] sm:mt-5 sm:text-base sm:leading-7">
@@ -432,16 +493,17 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="home-hero-stage relative mx-auto mt-4 grid w-full max-w-[1080px] items-center gap-4 pb-8 sm:mt-6 sm:pb-10 lg:mt-2 lg:grid-cols-[1fr_270px_1fr] lg:gap-6 lg:pb-0">
+          <div className="home-hero-stage relative mx-auto mt-4 grid w-full max-w-[1180px] items-center gap-4 pb-8 sm:mt-6 sm:pb-10 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_290px_minmax(0,1fr)] lg:gap-7 lg:pb-4">
             <div className="home-hero-side home-hero-side-left">
               <article className="home-float-card home-booking-card">
-                <span className="home-card-icon"><QrCode className="h-5 w-5" /></span>
+                <span className="home-booking-thumb">
+                  <Image src="/brand/mascot.png" alt="WePass QR scan mascot" width={72} height={72} sizes="72px" />
+                </span>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-sm font-bold text-[#17231D]">Restaurant Booking</p>
-                  <p className="mt-1 text-xs text-[#69766F]">Queue token is created when you join.</p>
-                  <p className="mt-2 inline-flex rounded-lg bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#237A50]">Wait estimate updates live</p>
+                  <p className="text-sm font-bold text-[#17231D]">Digital Queue Pass</p>
+                  <p className="mt-1 text-xs leading-5 text-[#69766F]">Created when you join a restaurant queue.</p>
+                  <p className="mt-2 inline-flex rounded-lg bg-[#E8F3EC] px-2.5 py-1 text-[11px] font-semibold text-[#237A50]">No guest app required</p>
                 </div>
-                <div className="home-card-ticket"><span>we</span></div>
               </article>
               <article className="home-float-card home-feature-card">
                 <span className="home-card-icon"><Armchair className="h-5 w-5" /></span>
@@ -452,7 +514,7 @@ export default function HomePage() {
               </article>
             </div>
 
-            <div className="home-product-preview relative z-10 mx-auto w-full max-w-[270px] text-left" aria-label="Illustrative WePass guest queue pass">
+            <div className="home-product-preview relative z-10 mx-auto w-full max-w-[290px] text-left" aria-label="Illustrative WePass guest queue pass">
               <div className="home-product-status">
                 <span className="home-phone-camera" aria-hidden="true" />
                 <span className="text-[9px] font-bold tracking-[0.12em] text-[#52635A]">WEPASS QUEUE PASS</span>
@@ -499,7 +561,7 @@ export default function HomePage() {
             <div className="home-hero-side home-hero-side-right">
               <article className="home-float-card home-stats-card">
                 <div className="flex items-start gap-3">
-                  <span className="home-card-icon"><UsersRound className="h-5 w-5" /></span>
+                  <span className="home-card-icon"><ChartNoAxesColumnIncreasing className="h-5 w-5" /></span>
                   <div className="min-w-0 flex-1 text-left">
                     <p className="text-sm font-bold text-[#17231D]">Live Queue Statistics</p>
                     <div className="mt-4 grid grid-cols-3 divide-x divide-[#E5ECE7]">
@@ -538,38 +600,107 @@ export default function HomePage() {
       </section>
 
       <section id="about" className="home-section home-about-section">
-        <div className="page-container mx-auto grid items-center gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
-          <div>
-            <p className="home-eyebrow"><span /> About WePass</p>
-            <h2 className="home-section-title mt-4">Everything your restaurant needs, <span>in one platform.</span></h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-[#66736A] sm:text-base">
-              WePass simplifies restaurant operations and improves the customer experience through smart queue management and seamless table management.
-            </p>
-            <ul className="home-check-list mt-7 grid gap-3 sm:grid-cols-2">
-              {[
-                'Smart queue management',
-                'Real-time queue tracking',
-                'Digital queue tokens',
-                'Table availability',
-                'Restaurant management',
-                'Better guest experiences',
-              ].map((item) => (
-                <li key={item}><Check />{item}</li>
-              ))}
-            </ul>
-            <Link href="/business-registration" className="home-outline-button mt-8">
-              Learn about WePass <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="home-about-panel">
-            <span className="home-about-panel-icon"><QrCode /></span>
-            <p className="home-about-panel-label">One platform, two better experiences</p>
-            <h3>Less uncertainty for guests. <span>More clarity for your team.</span></h3>
-            <p className="home-about-panel-description">Guests follow their place from a mobile browser while restaurant teams manage queue activity from their account.</p>
-            <div className="home-about-panel-bottom">
-              <span><Smartphone />Guest queue pass</span>
-              <span><UsersRound />Restaurant controls</span>
+        <div className="page-container mx-auto">
+          <div className="home-about-hero">
+            <div className="home-about-copy" data-about-reveal="copy">
+              <p className="home-eyebrow"><span /> About WePass</p>
+              <h2 className="home-section-title mt-4">
+                Smarter Queue Management for a <span>Better Dining Experience.</span>
+              </h2>
+              <p className="home-about-description">
+                WePass helps restaurants manage queue flow and table operations, while guests follow their place in line from a mobile browser.
+              </p>
+
+              <div className="home-about-stats" role="group" aria-label="Live WePass platform statistics">
+                <div className="home-about-stat">
+                  <UsersRound aria-hidden="true" />
+                  <span><strong>{proofStats?.guestsServed.toLocaleString() ?? '—'}</strong><small>Guests served</small></span>
+                </div>
+                <div className="home-about-stat">
+                  <Building2 aria-hidden="true" />
+                  <span><strong>{proofStats?.activeRestaurants.toLocaleString() ?? '—'}</strong><small>Active restaurants</small></span>
+                </div>
+                <div className="home-about-stat">
+                  <Timer aria-hidden="true" />
+                  <span>
+                    <strong>
+                      {proofStats
+                        ? proofStats.averageWaitMinutes === null
+                          ? 'No data'
+                          : `${proofStats.averageWaitMinutes} min`
+                        : '—'}
+                    </strong>
+                    <small>Average wait to seat</small>
+                  </span>
+                </div>
+              </div>
+              {proofError && (
+                <p className="home-about-stats-status" role="status">
+                  Live platform statistics are temporarily unavailable.
+                </p>
+              )}
+              <p className="home-about-stats-note">Live platform activity; guest and wait-time totals cover the last 30 days.</p>
+
+              <Link href="#how-it-works" className="home-outline-button mt-7">
+                Learn More <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
+
+            <div className="home-about-visual" data-about-reveal="visual">
+              <div className="home-about-visual-halo" aria-hidden="true" />
+              <div className="home-about-visual-grid" aria-hidden="true" />
+              <Image
+                src="/brand/mascot.png"
+                alt="WePass mascot displaying a QR code for joining a restaurant queue"
+                width={935}
+                height={1199}
+                sizes="(max-width: 767px) 90vw, 48vw"
+                className="home-about-mascot"
+              />
+              <div className="home-about-float-card home-about-float-card-top">
+                <span><QrCode aria-hidden="true" /></span>
+                <p><strong>Join from your phone</strong><small>No guest app required</small></p>
+              </div>
+              <div className="home-about-float-card home-about-float-card-bottom">
+                <span><ChartNoAxesColumnIncreasing aria-hidden="true" /></span>
+                <p><strong>Clearer queue flow</strong><small>Live status from the restaurant</small></p>
+              </div>
+              <span className="home-about-spark home-about-spark-one" aria-hidden="true" />
+              <span className="home-about-spark home-about-spark-two" aria-hidden="true" />
+              <span className="home-about-spark home-about-spark-three" aria-hidden="true" />
+            </div>
+          </div>
+
+          <div className="home-purpose-grid">
+            {[
+              {
+                Icon: Rocket,
+                title: 'Our Mission',
+                description: 'Make restaurant queues easier to manage and easier for guests to follow.',
+              },
+              {
+                Icon: Gem,
+                title: 'Our Vision',
+                description: 'A more seamless dining experience for guests and restaurant teams.',
+              },
+              {
+                Icon: Handshake,
+                title: 'Our Values',
+                description: 'Clear communication, thoughtful operations, and guest-first service.',
+              },
+            ].map(({ Icon, title, description }) => (
+              <article
+                key={title}
+                className="home-purpose-card"
+                data-about-reveal="purpose"
+              >
+                <span className="home-purpose-icon"><Icon aria-hidden="true" /></span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -661,8 +792,8 @@ export default function HomePage() {
       <section id="product" className="section-padding home-feature-section">
         <div className="page-container mx-auto">
           <div className="home-feature-showcase">
-            <div className="home-feature-showcase-copy">
-              <p className="home-eyebrow"><span /> Powerful Features</p>
+            <div className="home-feature-showcase-copy" data-feature-reveal="copy">
+              <p className="home-eyebrow"><span /><ChartNoAxesColumnIncreasing aria-hidden="true" /> Powerful Features</p>
               <h2 className="home-section-title mt-5">Smarter Queue <span>Management</span></h2>
               <p className="mt-5 max-w-xl text-sm leading-7 text-[#53665D] sm:text-base">
                 Everything your team needs to manage restaurant queues and give guests a clearer dining experience.
@@ -675,8 +806,13 @@ export default function HomePage() {
                   Explore how it works
                 </Link>
               </div>
+              <div className="home-feature-trust">
+                <span><Check aria-hidden="true" /> QR-based queue joining</span>
+                <span><Check aria-hidden="true" /> Guest pass in the browser</span>
+                <span><Check aria-hidden="true" /> Live queue status</span>
+              </div>
             </div>
-            <div className="home-dashboard-preview" aria-label="WePass dashboard preview with live platform statistics">
+            <div className="home-dashboard-preview" data-feature-reveal="dashboard" aria-label="WePass dashboard preview with live platform statistics">
               <div className="home-dashboard-topbar">
                 <div className="flex items-center gap-2">
                   <Image src="/brand/wepass-icon.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md object-cover" />
@@ -747,7 +883,7 @@ export default function HomePage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.title} className="home-product-feature-card">
+                <article key={item.title} className="home-product-feature-card" data-feature-reveal="card">
                   <span><Icon /></span>
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
@@ -930,6 +1066,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <BookDemoSection />
 
       <footer className="home-footer">
         <div className="home-footer-orbit home-footer-orbit-left" aria-hidden="true" />
