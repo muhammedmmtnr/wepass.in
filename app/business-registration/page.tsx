@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CheckCircle2, ArrowLeft, Building2 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
+import styles from './page.module.css';
 
 type LeadForm = {
   contactPersonName: string;
@@ -14,7 +15,6 @@ type LeadForm = {
   whatsappNumber: string;
   email: string;
   notes: string;
-  requestedDateTime: string;
 };
 
 const initialForm: LeadForm = {
@@ -26,10 +26,9 @@ const initialForm: LeadForm = {
   whatsappNumber: '',
   email: '',
   notes: '',
-  requestedDateTime: '',
 };
 
-const requiredFields: Array<keyof Omit<LeadForm, 'email' | 'requestedDateTime'>> = [
+const requiredFields: Array<keyof Omit<LeadForm, 'email'>> = [
   'contactPersonName',
   'businessName',
   'city',
@@ -48,7 +47,6 @@ const fieldLabels: Record<keyof LeadForm, string> = {
   whatsappNumber: 'WhatsApp number',
   email: 'Email address',
   notes: 'Notes / requirements',
-  requestedDateTime: 'Requested date and time',
 };
 
 export default function BusinessRegistrationPage() {
@@ -73,16 +71,6 @@ export default function BusinessRegistrationPage() {
     const missingField = requiredFields.find((field) => !form[field].trim());
     if (missingField) {
       setError(`${fieldLabels[missingField]} is required.`);
-      return;
-    }
-
-    if (isDemoBooking && !form.requestedDateTime) {
-      setError('Choose a requested date and time for your demo.');
-      return;
-    }
-
-    if (form.requestedDateTime && new Date(form.requestedDateTime).getTime() <= Date.now()) {
-      setError('Choose a requested date and time in the future.');
       return;
     }
 
@@ -130,29 +118,29 @@ export default function BusinessRegistrationPage() {
   const labelClassName = 'mb-1.5 block text-sm font-semibold text-slate-800';
 
   return (
-    <main className="min-h-screen bg-[#EFF8F2] px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between">
-          <BrandLogo size="md" showSubtitle />
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#079F61]">
+    <main className={`${styles.page} min-h-screen bg-[#EFF8F2] px-4 py-8 sm:px-6 sm:py-12`}>
+      <div className={`${styles.container} mx-auto max-w-3xl`}>
+        <div className={`${styles.header} mb-8 flex items-center justify-between`}>
+          <BrandLogo className={styles.brand} size="md" showSubtitle />
+          <Link href="/" className={`${styles.homeLink} inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#079F61]`}>
             <ArrowLeft className="h-4 w-4" />
             Home
           </Link>
         </div>
 
-        <section className="overflow-hidden rounded-3xl border border-white bg-white shadow-xl shadow-emerald-950/5">
-          <div className="bg-[#079F61] px-6 py-8 text-white sm:px-10 sm:py-10">
+        <section className={`${styles.card} overflow-hidden rounded-3xl border border-white bg-white shadow-xl shadow-emerald-950/5`}>
+          <div className={`${styles.hero} bg-[#079F61] px-6 py-8 text-white sm:px-10 sm:py-10`}>
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
               <Building2 className="h-6 w-6" />
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-50">WE PASS for restaurants</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Let’s improve your guest experience.</h1>
+            <h1 className={`${styles.title} mt-2 text-3xl font-black tracking-tight sm:text-4xl`}>Let’s improve your guest experience.</h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-emerald-50 sm:text-base">
               Tell us about your business and what you need. Our team will get in touch to help you get started.
             </p>
           </div>
 
-          <div className="p-6 sm:p-10">
+          <div className={`${styles.content} p-6 sm:p-10`}>
             {submitted && (
               <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#079F61]" />
@@ -162,11 +150,7 @@ export default function BusinessRegistrationPage() {
                       ? 'Thanks — your demo request has been saved.'
                       : 'Thanks — your details have been saved.'}
                   </p>
-                  <p className="mt-1">
-                    {submittedAsDemo
-                      ? 'The WE PASS team will follow up to confirm your requested time.'
-                      : 'The WE PASS team will follow up with you.'}
-                  </p>
+                  <p className="mt-1">The WE PASS team will follow up with you.</p>
                 </div>
               </div>
             )}
@@ -179,7 +163,7 @@ export default function BusinessRegistrationPage() {
             )}
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className={`${styles.fields} grid gap-5 sm:grid-cols-2`}>
                 {([
                   ['contactPersonName', 'text', 'Your full name', true],
                   ['businessName', 'text', 'e.g. The Green Table', true],
@@ -231,25 +215,7 @@ export default function BusinessRegistrationPage() {
                 <p className="mt-1 text-right text-xs text-slate-400">{form.notes.length}/3000</p>
               </div>
 
-              <div>
-                <label className={labelClassName} htmlFor="requestedDateTime">
-                  Requested date and time
-                  <span className="ml-1 text-slate-400">(for booking requests)</span>
-                </label>
-                <input
-                  id="requestedDateTime"
-                  name="requestedDateTime"
-                  type="datetime-local"
-                  value={form.requestedDateTime}
-                  onChange={(event) => updateField('requestedDateTime', event.target.value)}
-                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60_000)
-                    .toISOString()
-                    .slice(0, 16)}
-                  className={inputClassName}
-                />
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className={`${styles.actions} flex flex-col gap-3 sm:flex-row`}>
                 <button
                   type="submit"
                   name="requestType"
@@ -271,7 +237,7 @@ export default function BusinessRegistrationPage() {
               </div>
             </form>
 
-            <p className="mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500">
+            <p className={`${styles.footer} mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500`}>
               Already have a WE PASS account?{' '}
               <Link href="/login" className="font-semibold text-[#079F61] hover:underline">Sign in</Link>
               {' · '}
@@ -280,7 +246,7 @@ export default function BusinessRegistrationPage() {
           </div>
         </section>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className={`${styles.note} mt-6 text-center text-xs text-slate-500`}>
           Your enquiry is sent securely to the WE PASS team and saved in our business leads sheet.
         </p>
       </div>

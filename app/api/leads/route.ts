@@ -16,8 +16,9 @@ export async function POST(req: NextRequest) {
   try {
     const endpoint = process.env.GOOGLE_APPS_SCRIPT_WEB_APP_URL;
     if (!endpoint) {
+      console.error('Business lead submission is unavailable because GOOGLE_APPS_SCRIPT_WEB_APP_URL is not configured.');
       return NextResponse.json(
-        { error: 'Business registration is temporarily unavailable. Please try again later.' },
+        { error: 'Business registration is temporarily unavailable. Please contact us directly.' },
         { status: 503 }
       );
     }
@@ -86,24 +87,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
     }
 
-    const requestedDateTime =
-      typeof formData.requestedDateTime === 'string' ? formData.requestedDateTime.trim() : '';
-    const parsedRequestedDateTime = new Date(`${requestedDateTime}:00Z`);
-    if (
-      requestedDateTime &&
-      (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(requestedDateTime) ||
-        Number.isNaN(parsedRequestedDateTime.getTime()) ||
-        parsedRequestedDateTime.toISOString().slice(0, 16) !== requestedDateTime)
-    ) {
-      return NextResponse.json({ error: 'Please enter a valid requested date and time.' }, { status: 400 });
-    }
-    if ((requestType === 'booking_request' || requestType === 'demo_booking') && !requestedDateTime) {
-      return NextResponse.json(
-        { error: 'Choose a requested date and time for your booking request.' },
-        { status: 400 }
-      );
-    }
-
     const digits = values.whatsappNumber.replace(/\D/g, '');
     if (!values.whatsappNumber.startsWith('+') || digits.length < 8 || digits.length > 15) {
       return NextResponse.json(
@@ -122,7 +105,6 @@ export async function POST(req: NextRequest) {
         whatsappNumber: `+${digits}`,
         email,
         requestType,
-        requestedDateTime,
       }),
       cache: 'no-store',
       signal: AbortSignal.timeout(15_000),

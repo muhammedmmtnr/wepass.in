@@ -1,0 +1,86 @@
+.page,
+.container,
+.header,
+.card,
+.hero,
+.content,
+.fields,
+.actions {
+  min-width: 0;
+}
+
+.card {
+  width: 100%;
+}
+
+.fields > * {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1.5rem 1rem;
+  }
+
+  .header {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .brand,
+  .homeLink {
+    flex-shrink: 0;
+  }
+
+  .homeLink {
+    white-space: nowrap;
+  }
+
+  .card {
+    border-radius: 1.25rem;
+  }
+
+  .hero,
+  .content {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .fields {
+    gap: 1rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .footer,
+  .note {
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  .hero,
+  .content {
+    padding: 1.25rem;
+  }
+
+  .brand > div:last-child > span:last-child {
+    display: none;
+  }
+}

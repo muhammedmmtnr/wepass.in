@@ -113,7 +113,7 @@ GOOGLE_APPS_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/YOUR_DEPLOYME
 
 ### Business lead collection to Google Sheets
 
-The public business enquiry and demo booking form is available at `/business-registration`. Visitors can send a business enquiry or book a demo with a requested date and time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. Demo bookings are stored with the request type `demo_booking`. The spreadsheet URL by itself is not a submission endpoint.
+The public business enquiry and demo booking form is available at `/business-registration`. Visitors can send a business enquiry or book a demo without selecting a date or time. It submits to the server-side `/api/leads` route, which validates the fields and forwards each submission to the configured Apps Script Web App. Demo bookings are stored with the request type `demo_booking`. The spreadsheet URL by itself is not a submission endpoint.
 
 1. Open the supplied spreadsheet with ID `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc` and create or select a sheet named `Leads`.
 2. In **Extensions → Apps Script**, add this handler. It appends each accepted lead as a new row and records the timestamp in Google Sheets.
@@ -133,20 +133,8 @@ function doPost(e) {
       throw new Error('Missing required fields');
     }
     const requestType = data.requestType || 'business_enquiry';
-    const requestedDateTime = String(data.requestedDateTime || '').trim();
     if (!['business_enquiry', 'booking_request', 'demo_booking'].includes(requestType)) {
       throw new Error('Invalid request type');
-    }
-    const parsedRequestedDateTime = new Date(`${requestedDateTime}:00Z`);
-    if (requestedDateTime && (
-      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(requestedDateTime) ||
-      Number.isNaN(parsedRequestedDateTime.getTime()) ||
-      parsedRequestedDateTime.toISOString().slice(0, 16) !== requestedDateTime
-    )) {
-      throw new Error('Invalid requested date and time');
-    }
-    if (['booking_request', 'demo_booking'].includes(requestType) && !requestedDateTime) {
-      throw new Error('Bookings need a requested date and time');
     }
 
     const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
@@ -154,12 +142,12 @@ function doPost(e) {
     const headers = [
       'Timestamp', 'Contact Person Name', 'Restaurant / Business Name',
       'City', 'District', 'State', 'WhatsApp Number', 'Email Address',
-      'Notes / Requirements', 'Request Type', 'Requested Date and Time'
+      'Notes / Requirements', 'Request Type'
     ];
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(headers);
     } else {
-      sheet.getRange(1, 10, 1, 2).setValues([headers.slice(9)]);
+      sheet.getRange(1, 10).setValue(headers[9]);
     }
     sheet.appendRow([
       new Date(),
@@ -171,8 +159,7 @@ function doPost(e) {
       data.whatsappNumber,
       data.email || '',
       data.notes,
-      data.requestType || 'business_enquiry',
-      data.requestedDateTime || ''
+      data.requestType || 'business_enquiry'
     ]);
 
     return ContentService
@@ -186,8 +173,8 @@ function doPost(e) {
 }
 ```
 
-3. If the `Leads` sheet already exists, the handler adds the `Request Type` and `Requested Date and Time` headers in columns J and K. Deploy or update the Apps Script as a **Web app**, choose **Execute as me**, and allow access to **Anyone** so the server endpoint can submit public enquiries. Copy the deployment URL ending in `/exec`.
-4. Set that URL as `GOOGLE_APPS_SCRIPT_WEB_APP_URL` in the server environment (including production hosting) and restart/redeploy. Do not use the service-account email as the endpoint or expose private credentials in client code.
+3. If the `Leads` sheet already exists, the handler sets the `Request Type` header in column J. Deploy or update the Apps Script as a **Web app**, choose **Execute as me**, and allow access to **Anyone** so the server endpoint can submit public enquiries. Copy the deployment URL ending in `/exec`.
+4. Set the deployed URL (not the spreadsheet URL or a placeholder) as `GOOGLE_APPS_SCRIPT_WEB_APP_URL` in the server environment, including production hosting, and restart/redeploy. The form cannot write to Google Sheets until this endpoint is configured. Do not use the service-account email as the endpoint or expose private credentials in client code.
 
 The UI reports success only after Apps Script returns `{ "success": true }`; failed submissions leave the form values in place so the visitor can retry.
 
