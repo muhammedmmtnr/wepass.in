@@ -1700,15 +1700,171 @@ select {
   color: #237a50;
 }
 
-.home-pricing-card {
+.home-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.home-pricing-plan {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border: 1px solid #e4ece6;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
+  box-shadow: 0 16px 42px rgba(26, 73, 46, 0.07);
+}
+
+.home-pricing-plan-popular {
+  border: 2px solid #35c986;
+  background: linear-gradient(160deg, #fff 20%, #f0fbf4 100%);
+  box-shadow: 0 20px 52px rgba(24, 164, 98, 0.12);
+}
+
+.home-pricing-popular-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: linear-gradient(100deg, #18c478, #0d9c61);
+  padding: 0.5rem 1.25rem;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.home-pricing-plan-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
-  border: 1px solid #e2ece5;
-  border-radius: 1.75rem;
-  background: #f5faf6;
-  padding: clamp(1.4rem, 4vw, 3rem);
+  gap: 0.5rem;
+}
+
+.home-pricing-plan-heading h3 {
+  color: #17231d;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.home-pricing-plan-heading > span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #d7f8e3;
+  padding: 0.35rem 0.65rem;
+  color: #145a3c;
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+
+.home-pricing-price {
+  display: flex;
+  min-height: 3.4rem;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  color: #17231d;
+}
+
+.home-pricing-price > strong {
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.2;
+}
+
+.home-pricing-price > span {
+  color: #69766f;
+  font-size: 0.82rem;
+}
+
+.home-pricing-price-quote > strong {
+  font-size: clamp(1.15rem, 2.3vw, 1.7rem);
+  letter-spacing: -0.04em;
+}
+
+.home-pricing-features {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding-bottom: 1.25rem;
+  color: #405147;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.home-pricing-features > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.home-pricing-features svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  border-radius: 50%;
+  background: #14b96e;
+  padding: 0.12rem;
+  color: #fff;
+  stroke-width: 3;
+}
+
+.home-pricing-note {
+  display: grid;
+  min-height: 3.25rem;
+  place-items: center;
+  margin-top: auto;
+  border-top: 1px solid #e5ece7;
+  padding: 0.7rem 0.25rem 0;
+  color: #69766f;
+  font-size: 0.69rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.home-pricing-action {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  border: 1px solid #55c991;
+  border-radius: 999px;
+  background: #fff;
+  color: #17231d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.home-pricing-action:hover {
+  transform: translateY(-1px);
+  background: #e8f3ec;
+}
+
+.home-pricing-action > svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.home-pricing-action-primary {
+  border-color: transparent;
+  background: linear-gradient(100deg, #16b96e, #087c50);
+  color: #fff;
+}
+
+.home-pricing-action-primary:hover {
+  background: linear-gradient(100deg, #119d5d, #066641);
 }
 
 .home-final-cta {
@@ -1884,14 +2040,18 @@ select {
     gap: 1.5rem;
   }
 
-  .home-pricing-card {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1.25rem;
+  .home-pricing-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin-top: 2.25rem;
   }
 
-  .home-pricing-card .home-primary-button {
-    width: 100%;
+  .home-pricing-plan {
+    padding: 1.35rem;
+  }
+
+  .home-pricing-plan-popular {
+    margin-top: 0.5rem;
   }
 
   .home-check-list {
@@ -1901,6 +2061,26 @@ select {
   .home-steps-section .home-section-title,
   .home-about-section .home-section-title {
     font-size: clamp(1.85rem, 7vw, 2.65rem);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .home-pricing-plan:last-child {
+    grid-column: 1 / -1;
+    width: min(100%, 28rem);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 359px) {
+  .home-pricing-plan-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -1948,6 +2128,286 @@ select {
   .home-primary-button,
   .home-final-primary,
   .home-final-secondary {
+    transition: none;
+  }
+}
+
+.home-footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 2% 55%, rgba(0, 111, 63, 0.34), transparent 38%),
+    linear-gradient(112deg, #003a26 0%, #03180f 45%, #020d08 100%);
+  color: #fff;
+}
+
+.home-footer-inner {
+  position: relative;
+  padding-top: clamp(3rem, 7vw, 5.5rem);
+}
+
+.home-footer-orbit {
+  position: absolute;
+  z-index: -1;
+  width: 32rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(0, 181, 102, 0.42);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.home-footer-orbit::before,
+.home-footer-orbit::after {
+  position: absolute;
+  border: 1px solid rgba(0, 181, 102, 0.3);
+  border-radius: 50%;
+  content: "";
+}
+
+.home-footer-orbit::before {
+  inset: 3rem;
+}
+
+.home-footer-orbit::after {
+  inset: 6rem;
+}
+
+.home-footer-orbit-left {
+  top: -25rem;
+  left: -20rem;
+}
+
+.home-footer-orbit-right {
+  top: -23rem;
+  right: -19rem;
+  width: 36rem;
+}
+
+.home-footer-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(8rem, 0.7fr) minmax(11rem, 0.8fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-bottom: 2.75rem;
+}
+
+.home-footer-brand {
+  max-width: 25rem;
+}
+
+.home-footer-brand > p {
+  max-width: 22rem;
+  margin-top: 1.25rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.home-footer-contact {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.85rem;
+  transition: color 160ms ease;
+}
+
+.home-footer-contact:hover,
+.home-footer-connect > a:hover,
+.home-footer-links a:hover {
+  color: #68dfa1;
+}
+
+.home-footer-contact > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #4cd38a;
+}
+
+.home-footer-contact > span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.home-footer-contact small {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.67rem;
+}
+
+.home-footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.home-footer-socials > a {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid #0aad65;
+  border-radius: 50%;
+  color: #fff;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.home-footer-socials > a:hover {
+  transform: translateY(-2px);
+  background: #0aad65;
+  color: #03180f;
+}
+
+.home-footer-socials svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.home-footer-links,
+.home-footer-connect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home-footer-links h2,
+.home-footer-connect h2 {
+  margin-bottom: 1.25rem;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.home-footer-links ul {
+  display: grid;
+  gap: 0.8rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.85rem;
+}
+
+.home-footer-links a,
+.home-footer-connect > a {
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 160ms ease;
+}
+
+.home-footer-connect > a + a {
+  margin-top: 0.8rem;
+}
+
+.home-footer-connect > p {
+  max-width: 15rem;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.75rem;
+  line-height: 1.65;
+}
+
+.home-footer-wordmark {
+  height: clamp(4.5rem, 14vw, 11rem);
+  overflow: hidden;
+  color: rgba(0, 169, 91, 0.2);
+  font-size: clamp(4.25rem, 16vw, 13rem);
+  font-weight: 850;
+  letter-spacing: -0.085em;
+  line-height: 0.85;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.home-footer-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.75rem;
+}
+
+.home-footer-bottom > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  transition: color 160ms ease;
+}
+
+.home-footer-bottom > a:hover {
+  color: #68dfa1;
+}
+
+.home-footer-bottom > a > svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  transform: rotate(-90deg);
+}
+
+@media (max-width: 767px) {
+  .home-footer-main {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2rem 1.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .home-footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .home-footer-brand > p {
+    max-width: 28rem;
+  }
+
+  .home-footer-wordmark {
+    height: clamp(3.75rem, 17vw, 7rem);
+    font-size: clamp(4rem, 17vw, 8rem);
+    text-align: left;
+  }
+
+  .home-footer-orbit-left {
+    top: -26rem;
+    left: -26rem;
+  }
+
+  .home-footer-orbit-right {
+    top: -15rem;
+    right: -25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .home-footer-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+
+  .home-footer-brand {
+    grid-column: auto;
+  }
+
+  .home-footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.65rem;
+    padding-block: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-footer-contact,
+  .home-footer-socials > a,
+  .home-footer-links a,
+  .home-footer-connect > a,
+  .home-footer-bottom > a {
     transition: none;
   }
 }

@@ -11,7 +11,9 @@ import {
   ChevronDown,
   Clock3,
   CircleCheck,
+  Instagram,
   MapPin,
+  MessageCircle,
   Menu,
   QrCode,
   ShieldCheck,
@@ -766,16 +768,72 @@ export default function HomePage() {
 
       <section id="pricing" className="home-section home-pricing-section">
         <div className="page-container mx-auto">
-          <div className="home-pricing-card">
-            <div>
-              <p className="home-eyebrow"><span /> Pricing</p>
-              <h2 className="home-section-title mt-4">The right setup <span>starts with a conversation.</span></h2>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-[#66736A] sm:text-base">Tell us about your restaurant and what your team needs. Contact us for pricing details and a walkthrough tailored to your operation.</p>
-            </div>
-            <Link href="/business-registration" className="home-primary-button">
-              Ask about pricing <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="home-eyebrow justify-center"><span /> Pricing</p>
+            <h2 className="home-section-title mx-auto mt-4">Simple, transparent pricing <span>for every restaurant.</span></h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#66736A] sm:text-base">Choose the plan that fits your needs. Upgrade anytime.</p>
           </div>
+          <div className="home-pricing-grid">
+            {[
+              {
+                name: 'WePass Basic',
+                cadence: 'Monthly',
+                price: '₹299',
+                unit: '/ month',
+                features: ['Basic platform functionality', 'No data access', 'Standard features', 'Monthly subscription validity'],
+                note: 'Best for customers who need basic functionality.',
+                action: 'Get Started',
+                href: '/business-registration',
+              },
+              {
+                name: 'WePass Premium',
+                cadence: 'Monthly',
+                price: '₹599',
+                unit: '/ month',
+                features: ['All Basic functionality', 'Data access', 'Advanced features', 'Reports and insights', 'Three-month subscription validity'],
+                note: 'Best for customers who need data and advanced functionality.',
+                action: 'Get Started',
+                href: '/business-registration',
+                popular: true,
+              },
+              {
+                name: 'WePass Custom',
+                cadence: 'Business',
+                price: 'Quotation based',
+                unit: '',
+                features: ['Custom functionality', 'Custom data access', 'Business-specific requirements', 'Flexible validity', 'Individually agreed pricing'],
+                note: 'Tailored for your business needs.',
+                action: 'Contact Us',
+                href: '/business-registration',
+              },
+            ].map((plan) => (
+              <article key={plan.name} className={`home-pricing-plan${plan.popular ? ' home-pricing-plan-popular' : ''}`}>
+                {plan.popular && <span className="home-pricing-popular-badge">Most Popular</span>}
+                <div className="home-pricing-plan-heading">
+                  <h3>{plan.name}</h3>
+                  <span>{plan.cadence}</span>
+                </div>
+                <p className={`home-pricing-price${plan.unit ? '' : ' home-pricing-price-quote'}`}>
+                  <strong>{plan.price}</strong>{plan.unit && <span>{plan.unit}</span>}
+                </p>
+                <ul className="home-pricing-features">
+                  {plan.features.map((feature) => (
+                    <li key={feature}><Check aria-hidden="true" />{feature}</li>
+                  ))}
+                </ul>
+                <p className="home-pricing-note">{plan.note}</p>
+                <Link
+                  href={plan.href}
+                  className={plan.popular ? 'home-pricing-action home-pricing-action-primary' : 'home-pricing-action'}
+                >
+                  {plan.action} <ArrowRight aria-hidden="true" />
+                </Link>
+              </article>
+            ))}
+          </div>
+          <p className="mt-5 text-center text-xs leading-5 text-[#69766F]">
+            Plan setup and subscription details are confirmed with our team when you get started.
+          </p>
         </div>
       </section>
 
@@ -812,77 +870,71 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-[#080D0A] text-white">
-        <div className="page-container mx-auto py-14 sm:py-16">
-          <div className="grid gap-10 border-b border-white/10 pb-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-12">
-            <div>
+      <footer className="home-footer">
+        <div className="home-footer-orbit home-footer-orbit-left" aria-hidden="true" />
+        <div className="home-footer-orbit home-footer-orbit-right" aria-hidden="true" />
+        <div className="home-footer-inner page-container mx-auto">
+          <div className="home-footer-main">
+            <div className="home-footer-brand">
               <BrandLogo size="md" tone="light" />
-              <h2 className="mt-6 text-xl font-bold tracking-tight">Your Time Matters.</h2>
-              <p className="mt-3 max-w-sm text-sm leading-7 text-white/60">
-                Wepass is a smart digital queue management platform that helps businesses manage customer queues efficiently while allowing customers to join queues online and track their waiting position in real time.
-              </p>
+              <p>One account for your restaurant. Smarter queues and more seamless visits for everyone.</p>
+              <a
+                href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="home-footer-contact"
+              >
+                <MessageCircle aria-hidden="true" />
+                <span>+91 74064 00140 <small>WhatsApp support</small></span>
+              </a>
+              <div className="home-footer-socials" aria-label="WePass social media">
+                <a
+                  href="https://www.instagram.com/wepass.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WePass on Instagram"
+                >
+                  <Instagram aria-hidden="true" />
+                </a>
+                <a
+                  href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Contact WePass on WhatsApp"
+                >
+                  <MessageCircle aria-hidden="true" />
+                </a>
+              </div>
             </div>
 
-            <nav aria-label="Footer quick links">
-              <h3 className="text-sm font-bold text-white">Quick Links</h3>
-              <ul className="mt-5 space-y-3 text-sm">
+            <nav aria-label="Footer quick links" className="home-footer-links">
+              <h2>Quick Links</h2>
+              <ul>
                 {[
-                  ['Home', '/'],
-                  ['About Us', '#about'],
+                  ['Home', '#top'],
+                  ['About', '#about'],
                   ['Features', '#product'],
-                  ['For Businesses', '#restaurants'],
-                  ['Contact Us', '#contact'],
+                  ['How It Works', '#how-it-works'],
+                  ['Pricing', '#pricing'],
+                  ['Contact', '#contact'],
                 ].map(([label, href]) => (
-                  <li key={label}>
-                    <a href={href} className="text-white/60 transition hover:text-[#6BE3A8]">{label}</a>
-                  </li>
+                  <li key={label}><a href={href}>{label}</a></li>
                 ))}
               </ul>
             </nav>
 
-            <div>
-              <h3 className="text-sm font-bold text-white">Connect With Us</h3>
-              <ul className="mt-5 space-y-3 text-sm">
-                <li>
-                  <a
-                    href="https://www.instagram.com/wepass.in/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white/60 transition hover:text-[#6BE3A8]"
-                  >
-                    Instagram
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div id="contact">
-              <h3 className="text-sm font-bold text-white">24/7 WhatsApp Support</h3>
-              <a
-                href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-block text-xl font-bold tracking-tight text-[#6BE3A8] transition hover:text-white"
-              >
-                +91 74064 00140
-              </a>
-              <p className="mt-2 text-sm leading-6 text-white/60">We&apos;re here to help you. Contact our support team anytime.</p>
-              <a
-                href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex text-sm font-semibold text-white transition hover:text-[#6BE3A8]"
-              >
-                Chat with WE PASS on WhatsApp <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+            <div id="contact" className="home-footer-connect">
+              <h2>Connect</h2>
+              <a href="https://www.instagram.com/wepass.in/" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp" target="_blank" rel="noopener noreferrer">WhatsApp support</a>
+              <p>Questions about WePass? Our team is happy to help.</p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-5 pt-7 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-semibold text-white/80">Skip the Wait. Enjoy the Moment.</p>
-              <p className="mt-2">© 2026 WE PASS. All Rights Reserved. <span className="mx-2 text-white/25">|</span> Website: wepass.in</p>
-            </div>
+          <div className="home-footer-wordmark" aria-hidden="true">WEPASS</div>
+          <div className="home-footer-bottom">
+            <p>Copyright © 2026 WePass. All Rights Reserved.</p>
+            <a href="#top">Back to top <ArrowRight aria-hidden="true" /></a>
           </div>
         </div>
       </footer>
