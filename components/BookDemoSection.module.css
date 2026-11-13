@@ -258,6 +258,14 @@
   margin-left: auto;
 }
 
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .privacyNote {
   margin-top: 0.65rem;
   color: #63746a;
@@ -689,5 +697,9 @@ a.contactCard:hover .contactArrow {
   .submit:hover:not(:disabled),
   a.contactCard:hover {
     transform: none;
+  }
+
+  .spinner {
+    animation: none;
   }
 }

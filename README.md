@@ -116,6 +116,8 @@ GOOGLE_SCRIPT_API_SECRET="<same random secret configured in Apps Script Script P
 
 The demo form sends to the server-side `/api/book-demo` route. General business leads continue to use `/api/leads`. The server validates the values and forwards them to Apps Script; `GOOGLE_SCRIPT_API_SECRET` is never sent to browser code.
 
+Restaurant/business name, owner/contact name, city, district, state, and WhatsApp number are required. Email and requirements are optional. A preferred demo date and time can still be supplied for calendar scheduling; leave both blank to request a demo without selecting a slot.
+
 1. Make sure the Google account that owns the Apps Script has Editor access to spreadsheet `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc`.
 2. In **Extensions → Apps Script**, update the deployed project with [`google-apps-script/Code.gs`](./google-apps-script/Code.gs). Existing lead rows are preserved; the script checks the original ten headers and appends any missing integration columns.
 3. In Apps Script **Project Settings → Script Properties**, set:
@@ -125,6 +127,8 @@ The demo form sends to the server-side `/api/book-demo` route. General business 
 4. Run `authorizeGoogleServices` from the Apps Script editor and approve the requested Sheets, Gmail, and Calendar scopes using the authorized WE PASS Google account.
 5. Deploy a new **Web app** version with **Execute as: Me** and **Who has access: Anyone**. Keep the existing `/exec` URL configured below, or update it if the deployment produces a new URL.
 6. Configure `GOOGLE_SCRIPT_WEB_APP_URL` and `GOOGLE_SCRIPT_API_SECRET` on the local server and production host. `.env.local` is ignored by Git. Never put the secret in client code, source files, or logs.
+
+The API returns HTTP 503 when either server-side variable is missing or invalid. A local `.env.local` does not configure the production host: set both values in the production deployment's server environment and redeploy/restart it. The API only reports success after Apps Script confirms `statuses.sheets: "saved"`.
 
 The `WE PASS Leads` sheet gains columns for business type, requested demo date/time, duration, Calendar Event ID, email/calendar statuses, lead status, request ID, and customer confirmation status. Existing leads are not removed. Demo requests default to 30 minutes and offer 30-, 45-, or 60-minute durations. Date/time validation and Calendar event creation use Asia/Kolkata. Calendar events have no guests and are explicitly pending; a time conflict is recorded for rescheduling instead of creating an event.
 

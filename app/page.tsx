@@ -817,16 +817,16 @@ export default function HomePage() {
                     )}
                     {visual === 'track' && (
                       <div className="home-step-track-art">
+                        <Image
+                          src="/brand/queue-table.png"
+                          alt=""
+                          fill
+                          sizes="(max-width: 767px) 90vw, 30vw"
+                          className="home-step-table-image"
+                        />
                         <div className="home-step-update">
                           <span><Check /></span>
                           <div><strong>Queue status</strong><small>Check your pass for updates</small></div>
-                        </div>
-                        <div className="home-step-table-art">
-                          <span className="home-step-chair home-step-chair-one" />
-                          <span className="home-step-chair home-step-chair-two" />
-                          <span className="home-step-chair home-step-chair-three" />
-                          <span className="home-step-chair home-step-chair-four" />
-                          <span className="home-step-tabletop"><Armchair /></span>
                         </div>
                       </div>
                     )}
@@ -1190,7 +1190,7 @@ export default function HomePage() {
               </a>
               <div className="home-footer-socials" aria-label="WePass social media">
                 <a
-                  href="https://www.instagram.com/wepass.in/"
+                  href="https://www.instagram.com/wepass.offical/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WePass on Instagram"
@@ -1226,7 +1226,7 @@ export default function HomePage() {
 
             <div id="contact" className="home-footer-connect">
               <h2>Connect</h2>
-              <a href="https://www.instagram.com/wepass.in/" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://www.instagram.com/wepass.offical/" target="_blank" rel="noopener noreferrer">Instagram</a>
               <a href="https://wa.me/917406400140?text=Chat%20with%20WE%20PASS%20on%20WhatsApp" target="_blank" rel="noopener noreferrer">WhatsApp support</a>
               <p>Questions about WePass? Our team is happy to help.</p>
             </div>

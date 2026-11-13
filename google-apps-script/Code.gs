@@ -70,7 +70,9 @@ function doPost(event) {
     };
 
     if (lead.requestType === 'demo_booking') {
-      statuses.calendar = processCalendar(sheet, columns, row, lead);
+      statuses.calendar = lead.preferredDemoDate && lead.preferredDemoTime
+        ? processCalendar(sheet, columns, row, lead)
+        : 'not_applicable';
       statuses.gmail = processBusinessEmail(sheet, columns, row, lead);
       statuses.customerConfirmation = processCustomerEmail(sheet, columns, row, lead);
       SpreadsheetApp.flush();
@@ -183,7 +185,6 @@ function validateLead(body) {
     'district',
     'state',
     'whatsappNumber',
-    'notes',
   ];
   const lead = {};
   fields.forEach(function (field) {
@@ -194,13 +195,23 @@ function validateLead(body) {
     lead[field] = value.trim();
   });
 
+  lead.notes = typeof body.notes === 'string' ? body.notes.trim() : '';
+  if (
+    (body.notes !== undefined && typeof body.notes !== 'string') ||
+    lead.notes.length > MAX_LENGTH.notes
+  ) {
+    throw new Error('Invalid requirements.');
+  }
+
   lead.businessType = typeof body.businessType === 'string' ? body.businessType.trim() : '';
   if (lead.businessType.length > MAX_LENGTH.businessType) throw new Error('Invalid business type.');
 
+  if (body.email !== undefined && typeof body.email !== 'string') {
+    throw new Error('Invalid email.');
+  }
   lead.email = typeof body.email === 'string' ? body.email.trim() : '';
   if (
     lead.email.length > MAX_LENGTH.email ||
-    (requestType === 'demo_booking' && !lead.email) ||
     (lead.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email))
   ) {
     throw new Error('Invalid email.');
@@ -220,11 +231,14 @@ function validateLead(body) {
   lead.demoDuration = Number(body.demoDuration || 30);
 
   if (requestType === 'demo_booking') {
+    const hasDemoSlot = lead.preferredDemoDate || lead.preferredDemoTime;
     if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(lead.preferredDemoDate) ||
-      !/^\d{2}:\d{2}$/.test(lead.preferredDemoTime) ||
       ![30, 45, 60].includes(lead.demoDuration) ||
-      !isFutureIndiaSlot(lead.preferredDemoDate, lead.preferredDemoTime)
+      (hasDemoSlot && (
+        !/^\d{4}-\d{2}-\d{2}$/.test(lead.preferredDemoDate) ||
+        !/^\d{2}:\d{2}$/.test(lead.preferredDemoTime) ||
+        !isFutureIndiaSlot(lead.preferredDemoDate, lead.preferredDemoTime)
+      ))
     ) {
       throw new Error('Invalid or non-future preferred demo slot.');
     }
@@ -308,7 +322,10 @@ function appendLead(sheet, columns, lead) {
   values[columns.demoDuration - 1] = lead.requestType === 'demo_booking' ? lead.demoDuration : '';
   values[columns.calendarEventId - 1] = '';
   values[columns.gmailStatus - 1] = lead.requestType === 'demo_booking' ? 'Pending' : 'Not applicable';
-  values[columns.calendarStatus - 1] = lead.requestType === 'demo_booking' ? 'Pending' : 'Not applicable';
+  values[columns.calendarStatus - 1] =
+    lead.requestType === 'demo_booking' && lead.preferredDemoDate && lead.preferredDemoTime
+      ? 'Pending'
+      : 'Not applicable';
   values[columns.leadStatus - 1] = 'New';
   values[columns.requestId - 1] = safeCellValue(lead.requestId);
   values[columns.customerConfirmationStatus - 1] = lead.requestType === 'demo_booking' ? 'Pending' : 'Not applicable';

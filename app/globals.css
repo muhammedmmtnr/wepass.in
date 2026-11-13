@@ -2667,64 +2667,10 @@ select {
   font-size: 0.49rem;
 }
 
-.home-step-table-art {
-  position: absolute;
-  bottom: 1.15rem;
-  left: 50%;
-  width: 11rem;
-  height: 4.5rem;
-  transform: translateX(-50%);
-}
-
-.home-step-tabletop {
-  position: absolute;
-  top: 0.85rem;
-  left: 50%;
-  display: grid;
-  width: 6rem;
-  height: 2.6rem;
-  place-items: center;
-  transform: translateX(-50%) perspective(100px) rotateX(10deg);
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: linear-gradient(160deg, #b6e6c6, #56c884);
-  box-shadow: 0 10px 14px rgba(14, 111, 63, 0.16);
-  color: #fff;
-}
-
-.home-step-tabletop svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.home-step-chair {
-  position: absolute;
-  width: 1.35rem;
-  height: 1.1rem;
-  border: 2px solid #0da764;
-  border-radius: 0.45rem 0.45rem 0.3rem 0.3rem;
-  background: linear-gradient(145deg, #42d88f, #079d62);
-  box-shadow: 0 4px 8px rgba(14, 111, 63, 0.18);
-}
-
-.home-step-chair-one {
-  top: 0;
-  left: 2.25rem;
-}
-
-.home-step-chair-two {
-  top: 0;
-  right: 2.25rem;
-}
-
-.home-step-chair-three {
-  bottom: 0;
-  left: 2.25rem;
-}
-
-.home-step-chair-four {
-  right: 2.25rem;
-  bottom: 0;
+.home-step-table-image {
+  object-fit: cover;
+  object-position: center 55%;
+  mix-blend-mode: multiply;
 }
 
 .home-steps-section {

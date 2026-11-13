@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ChartNoAxesColumnIncreasing,
   Check,
+  LoaderCircle,
   Mail,
   MessageCircle,
   Phone,
@@ -98,6 +99,7 @@ export default function BookDemoSection() {
   const [success, setSuccess] = useState<DemoSuccess | null>(null);
   const [error, setError] = useState('');
   const requestId = useRef<string | null>(null);
+  const submissionLock = useRef(false);
 
   const updateField = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -111,6 +113,8 @@ export default function BookDemoSection() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submissionLock.current) return;
+    submissionLock.current = true;
     setSubmitting(true);
     setSuccess(null);
     setError('');
@@ -181,6 +185,7 @@ export default function BookDemoSection() {
       console.error('Demo booking request failed:', submitError);
       setError('We could not confirm the result of your request. Please try again; your request ID prevents duplicate processing.');
     } finally {
+      submissionLock.current = false;
       setSubmitting(false);
     }
   };
@@ -203,10 +208,11 @@ export default function BookDemoSection() {
             <div className={styles.success} role="status">
               <Check aria-hidden="true" />
               <div className={styles.successDetails}>
-                <strong>Your WE PASS demo request has been received!</strong>
+                <strong>Demo Request Submitted Successfully!</strong>
+                <span>Thank you for your interest in WE PASS. Our team will contact you shortly to schedule your personalized demo.</span>
                 <span>Business: {success.businessName}</span>
-                <span>Requested date: {success.preferredDemoDate}</span>
-                <span>Requested time: {success.preferredDemoTime} IST</span>
+                {success.preferredDemoDate && <span>Requested date: {success.preferredDemoDate}</span>}
+                {success.preferredDemoTime && <span>Requested time: {success.preferredDemoTime} IST</span>}
                 <span>Duration: {success.demoDuration} minutes</span>
                 <strong>Appointment status: Pending Confirmation</strong>
                 <span>Sheets: {statusLabel(success.statuses.sheets)}</span>
@@ -264,7 +270,7 @@ export default function BookDemoSection() {
                 />
               </div>
               <div className={styles.field}>
-                <label htmlFor="demo-business-type">Business type</label>
+                <label htmlFor="demo-business-type">Business type (optional)</label>
                 <input
                   id="demo-business-type"
                   name="businessType"
@@ -273,11 +279,10 @@ export default function BookDemoSection() {
                   value={form.businessType}
                   onChange={updateField}
                   maxLength={200}
-                  required
                 />
               </div>
               <div className={styles.field}>
-                <label htmlFor="demo-email">Email</label>
+                <label htmlFor="demo-email">Email (optional)</label>
                 <div className={styles.inputWithIcon}>
                   <Mail aria-hidden="true" />
                   <input
@@ -289,7 +294,6 @@ export default function BookDemoSection() {
                     value={form.email}
                     onChange={updateField}
                     maxLength={254}
-                    required
                   />
                 </div>
               </div>
@@ -355,7 +359,7 @@ export default function BookDemoSection() {
                 />
               </div>
               <div className={styles.field}>
-                <label htmlFor="demo-preferred-date">Preferred demo date</label>
+                <label htmlFor="demo-preferred-date">Preferred demo date (optional)</label>
                 <input
                   id="demo-preferred-date"
                   name="preferredDemoDate"
@@ -363,11 +367,10 @@ export default function BookDemoSection() {
                   min={getIndiaClock().date}
                   value={form.preferredDemoDate}
                   onChange={updateField}
-                  required
                 />
               </div>
               <div className={styles.field}>
-                <label htmlFor="demo-preferred-time">Preferred demo time (IST)</label>
+                <label htmlFor="demo-preferred-time">Preferred demo time (IST, optional)</label>
                 <input
                   id="demo-preferred-time"
                   name="preferredDemoTime"
@@ -376,7 +379,6 @@ export default function BookDemoSection() {
                   min={getMinimumIndiaTime(form.preferredDemoDate)}
                   value={form.preferredDemoTime}
                   onChange={updateField}
-                  required
                 />
                 <small>Time slots are available every 30 minutes. Your slot is pending confirmation.</small>
               </div>
@@ -395,7 +397,7 @@ export default function BookDemoSection() {
                 </select>
               </div>
               <div className={`${styles.field} ${styles.fullWidth}`}>
-                <label htmlFor="demo-notes">Message</label>
+                <label htmlFor="demo-notes">Message / requirements (optional)</label>
                 <div className={`${styles.inputWithIcon} ${styles.textareaWithIcon}`}>
                   <MessageCircle aria-hidden="true" />
                   <textarea
@@ -406,14 +408,17 @@ export default function BookDemoSection() {
                     onChange={updateField}
                     rows={3}
                     maxLength={3000}
-                    required
                   />
                 </div>
               </div>
             </div>
 
             <button className={styles.submit} type="submit" disabled={submitting}>
-              <Send aria-hidden="true" />
+              {submitting ? (
+                <LoaderCircle className={styles.spinner} aria-hidden="true" />
+              ) : (
+                <Send aria-hidden="true" />
+              )}
               {submitting ? 'Submitting your request…' : 'Book a Demo'}
               {!submitting && <ArrowRight className={styles.submitArrow} aria-hidden="true" />}
             </button>

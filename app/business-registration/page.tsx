@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CheckCircle2, ArrowLeft, Building2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ArrowLeft, Building2, LoaderCircle } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 import styles from './page.module.css';
 
@@ -50,7 +50,6 @@ const requiredFields: Array<keyof Omit<LeadForm, 'email'>> = [
   'district',
   'state',
   'whatsappNumber',
-  'notes',
 ];
 
 const fieldLabels: Record<keyof LeadForm, string> = {
@@ -124,12 +123,8 @@ export default function BusinessRegistrationPage() {
     }
 
     if (isDemoBooking) {
-      if (!form.email.trim()) {
-        setError('Email address is required for a demo request.');
-        return;
-      }
-      if (!form.preferredDemoDate || !form.preferredDemoTime) {
-        setError('Choose a preferred demo date and time.');
+      if (Boolean(form.preferredDemoDate) !== Boolean(form.preferredDemoTime)) {
+        setError('Choose both a preferred demo date and time, or leave both blank.');
         return;
       }
     }
@@ -215,10 +210,14 @@ export default function BusinessRegistrationPage() {
                 <div>
                   <p className="font-bold">
                     {submittedAsDemo
-                      ? 'Thanks — your demo request has been saved.'
+                      ? 'Demo Request Submitted Successfully!'
                       : 'Thanks — your details have been saved.'}
                   </p>
-                  <p className="mt-1">The WE PASS team will follow up with you.</p>
+                  <p className="mt-1">
+                    {submittedAsDemo
+                      ? 'Thank you for your interest in WE PASS. Our team will contact you shortly to schedule your personalized demo.'
+                      : 'The WE PASS team will follow up with you.'}
+                  </p>
                   {submittedAsDemo && (
                     <p className="mt-1">
                       Requested slot: {submittedDemoSlot}. Appointment status: Pending Confirmation.
@@ -254,7 +253,8 @@ export default function BusinessRegistrationPage() {
                 ] as const).map(([field, type, placeholder, required]) => (
                   <div key={field}>
                     <label className={labelClassName} htmlFor={field}>
-                      {fieldLabels[field]}{required && <span className="ml-1 text-[#237A50]">*</span>}
+                      {fieldLabels[field]}{field === 'email' && <span className="ml-1 text-slate-500">(optional)</span>}
+                      {required && <span className="ml-1 text-[#237A50]">*</span>}
                     </label>
                     <input
                       id={field}
@@ -288,7 +288,7 @@ export default function BusinessRegistrationPage() {
                 </div>
                 <div>
                   <label className={labelClassName} htmlFor="preferredDemoDate">
-                    Preferred demo date
+                    Preferred demo date (optional)
                   </label>
                   <input
                     id="preferredDemoDate"
@@ -302,7 +302,7 @@ export default function BusinessRegistrationPage() {
                 </div>
                 <div>
                   <label className={labelClassName} htmlFor="preferredDemoTime">
-                    Preferred demo time (IST)
+                    Preferred demo time (IST, optional)
                   </label>
                   <input
                     id="preferredDemoTime"
@@ -336,7 +336,7 @@ export default function BusinessRegistrationPage() {
 
               <div>
                 <label className={labelClassName} htmlFor="notes">
-                  {fieldLabels.notes}<span className="ml-1 text-[#237A50]">*</span>
+                  {fieldLabels.notes} (optional)
                 </label>
                 <textarea
                   id="notes"
@@ -344,10 +344,8 @@ export default function BusinessRegistrationPage() {
                   value={form.notes}
                   onChange={(event) => updateField('notes', event.target.value)}
                   placeholder="Tell us about your queue, table management, or other requirements."
-                  required
                   rows={5}
                   maxLength={3000}
-                  aria-required="true"
                   className={`${inputClassName} resize-y`}
                 />
                 <p className="mt-1 text-right text-xs text-slate-400">{form.notes.length}/3000</p>
@@ -361,6 +359,7 @@ export default function BusinessRegistrationPage() {
                   disabled={submitting}
                   className="w-full rounded-xl border border-[#237A50] bg-white px-6 py-3.5 text-sm font-bold text-[#237A50] transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-[#237A50] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
+                  {submitting && <LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" />}
                   {submitting ? 'Submitting…' : 'Send business enquiry'}
                 </button>
                 <button
@@ -370,6 +369,7 @@ export default function BusinessRegistrationPage() {
                   disabled={submitting}
                   className="w-full rounded-xl bg-[#237A50] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#087c50] focus:outline-none focus:ring-2 focus:ring-[#237A50] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
+                  {submitting && <LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" />}
                   {submitting ? 'Submitting…' : 'Book a demo'}
                 </button>
               </div>

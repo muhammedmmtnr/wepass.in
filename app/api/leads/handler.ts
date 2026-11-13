@@ -21,10 +21,21 @@ const requiredFields = [
   'district',
   'state',
   'whatsappNumber',
-  'notes',
 ] as const;
 
-type IntegrationStatus = string;
+const integrationStatusFields = ['sheets', 'gmail', 'calendar', 'customerConfirmation'] as const;
+
+function hasIntegrationStatuses(
+  value: unknown
+): value is Record<(typeof integrationStatusFields)[number], string> {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    integrationStatusFields.every(
+      (field) => field in value && typeof value[field] === 'string'
+    )
+  );
+}
 
 function isValidFutureDemoSlot(dateValue: string, timeValue: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue) || !/^\d{2}:\d{2}$/.test(timeValue)) {
@@ -51,10 +62,14 @@ function isValidFutureDemoSlot(dateValue: string, timeValue: string) {
 
 export async function submitLead(req: NextRequest) {
   try {
-    const endpoint = process.env.GOOGLE_SCRIPT_WEB_APP_URL;
-    const apiSecret = process.env.GOOGLE_SCRIPT_API_SECRET;
+    const endpoint = process.env.GOOGLE_SCRIPT_WEB_APP_URL?.trim();
+    const apiSecret = process.env.GOOGLE_SCRIPT_API_SECRET?.trim();
     if (!endpoint || !apiSecret) {
-      console.error('Business lead submission is unavailable because Google Apps Script server configuration is incomplete.');
+      const missing = [
+        !endpoint && 'GOOGLE_SCRIPT_WEB_APP_URL',
+        !apiSecret && 'GOOGLE_SCRIPT_API_SECRET',
+      ].filter(Boolean);
+      console.error(`Business lead submission is unavailable; missing server configuration: ${missing.join(', ')}.`);
       return NextResponse.json(
         { error: 'Demo requests are temporarily unavailable. Please contact WePass directly.' },
         { status: 503 }
@@ -113,20 +128,21 @@ export async function submitLead(req: NextRequest) {
       district: '',
       state: '',
       whatsappNumber: '',
-      notes: '',
     };
     const aliases: Record<(typeof requiredFields)[number], string> = {
-      contactPersonName: 'name',
+      contactPersonName: 'ownerName',
       businessName: 'businessName',
       city: 'city',
       district: 'district',
       state: 'state',
       whatsappNumber: 'whatsapp',
-      notes: 'requirements',
     };
 
     for (const field of requiredFields) {
-      const value = formData[field] ?? formData[aliases[field]];
+      const value =
+        formData[field] ??
+        formData[aliases[field]] ??
+        (field === 'contactPersonName' ? formData.name : undefined);
       if (typeof value !== 'string' || !value.trim()) {
         return NextResponse.json({ error: 'Please complete all required fields.' }, { status: 400 });
       }
@@ -136,16 +152,31 @@ export async function submitLead(req: NextRequest) {
       values[field] = value.trim();
     }
 
+    const notesValue = formData.notes ?? formData.requirements;
+    if (notesValue !== undefined && typeof notesValue !== 'string') {
+      return NextResponse.json({ error: 'Requirements must be text.' }, { status: 400 });
+    }
+    const notes = typeof notesValue === 'string' ? notesValue.trim() : '';
+    if (notes.length > maxLengthByField.notes) {
+      return NextResponse.json({ error: 'Requirements are too long.' }, { status: 400 });
+    }
+
+    if (formData.businessType !== undefined && typeof formData.businessType !== 'string') {
+      return NextResponse.json({ error: 'Business type must be text.' }, { status: 400 });
+    }
     const businessType = typeof formData.businessType === 'string' ? formData.businessType.trim() : '';
     if (businessType.length > maxLengthByField.businessType) {
       return NextResponse.json({ error: 'Business type is too long.' }, { status: 400 });
     }
 
+    if (formData.email !== undefined && typeof formData.email !== 'string') {
+      return NextResponse.json({ error: 'Email address must be text.' }, { status: 400 });
+    }
     const email = typeof formData.email === 'string' ? formData.email.trim() : '';
     if (email.length > 254) {
       return NextResponse.json({ error: 'Email address is too long.' }, { status: 400 });
     }
-    if ((email || requestType === 'demo_booking') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
     }
 
@@ -158,10 +189,21 @@ export async function submitLead(req: NextRequest) {
     }
 
     const isDemo = requestType === 'demo_booking';
-    const preferredDemoDate = typeof formData.preferredDemoDate === 'string' ? formData.preferredDemoDate : '';
-    const preferredDemoTime = typeof formData.preferredDemoTime === 'string' ? formData.preferredDemoTime : '';
+    for (const field of ['preferredDemoDate', 'preferredDemoTime'] as const) {
+      if (formData[field] !== undefined && typeof formData[field] !== 'string') {
+        return NextResponse.json({ error: 'Choose a valid preferred demo date and time.' }, { status: 400 });
+      }
+    }
+    const preferredDemoDate =
+      typeof formData.preferredDemoDate === 'string' ? formData.preferredDemoDate.trim() : '';
+    const preferredDemoTime =
+      typeof formData.preferredDemoTime === 'string' ? formData.preferredDemoTime.trim() : '';
     const demoDuration = formData.demoDuration === undefined ? 30 : Number(formData.demoDuration);
-    if (isDemo && !isValidFutureDemoSlot(preferredDemoDate, preferredDemoTime)) {
+    if (
+      isDemo &&
+      (preferredDemoDate || preferredDemoTime) &&
+      !isValidFutureDemoSlot(preferredDemoDate, preferredDemoTime)
+    ) {
       return NextResponse.json(
         { error: 'Choose a future demo date and a time in India Standard Time, in 30-minute increments.' },
         { status: 400 }
@@ -183,6 +225,7 @@ export async function submitLead(req: NextRequest) {
         apiSecret,
         timestamp: new Date().toISOString(),
         ...values,
+        notes,
         businessType,
         whatsappNumber: `+${digits}`,
         email,
@@ -209,26 +252,32 @@ export async function submitLead(req: NextRequest) {
       );
     }
 
-    if (!response.ok || !result || typeof result !== 'object' || !('success' in result) || result.success !== true) {
+    if (
+      !response.ok ||
+      !result ||
+      typeof result !== 'object' ||
+      !('success' in result) ||
+      result.success !== true ||
+      !('statuses' in result) ||
+      !hasIntegrationStatuses(result.statuses)
+    ) {
       console.error(`Google Apps Script did not confirm the lead save (HTTP ${response.status}).`);
       return NextResponse.json(
         {
           error: 'We could not confirm that your details were saved. Please try again.',
-          ...(result && typeof result === 'object' && 'statuses' in result ? { statuses: result.statuses } : {}),
         },
         { status: 502 }
       );
     }
 
-    const statuses =
-      'statuses' in result && result.statuses && typeof result.statuses === 'object'
-        ? result.statuses as Record<string, IntegrationStatus>
-        : {
-            sheets: 'saved',
-            gmail: 'not_applicable',
-            calendar: 'not_applicable',
-            customerConfirmation: 'not_applicable',
-          };
+    const statuses = result.statuses;
+    if (statuses.sheets !== 'saved') {
+      console.error(`Google Apps Script did not confirm the Sheets save (HTTP ${response.status}).`);
+      return NextResponse.json(
+        { error: 'We could not confirm that your details were saved. Please try again.' },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -240,6 +289,12 @@ export async function submitLead(req: NextRequest) {
       'Business lead submission failed.',
       error instanceof Error ? error.name : 'Unknown error.'
     );
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      return NextResponse.json(
+        { error: 'The request to save your details timed out. Please try again.' },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { error: 'We could not save your details right now. Please try again.' },
       { status: 502 }
