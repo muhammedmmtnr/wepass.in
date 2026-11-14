@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,44 +62,10 @@ function isValidFutureDemoSlot(dateValue: string, timeValue: string) {
 }
 
 export async function submitLead(req: NextRequest) {
+  let databaseSaved = false;
   try {
     const endpoint = process.env.GOOGLE_SCRIPT_WEB_APP_URL?.trim();
     const apiSecret = process.env.GOOGLE_SCRIPT_API_SECRET?.trim();
-    if (!endpoint || !apiSecret) {
-      const missing = [
-        !endpoint && 'GOOGLE_SCRIPT_WEB_APP_URL',
-        !apiSecret && 'GOOGLE_SCRIPT_API_SECRET',
-      ].filter(Boolean);
-      console.error(`Business lead submission is unavailable; missing server configuration: ${missing.join(', ')}.`);
-      return NextResponse.json(
-        { error: 'Demo requests are temporarily unavailable. Please contact WePass directly.' },
-        { status: 503 }
-      );
-    }
-
-    let endpointUrl: URL;
-    try {
-      endpointUrl = new URL(endpoint);
-    } catch {
-      console.error('GOOGLE_SCRIPT_WEB_APP_URL is not a valid URL.');
-      return NextResponse.json(
-        { error: 'Demo requests are temporarily unavailable. Please contact WePass directly.' },
-        { status: 503 }
-      );
-    }
-
-    if (
-      endpointUrl.protocol !== 'https:' ||
-      endpointUrl.hostname !== 'script.google.com' ||
-      !endpointUrl.pathname.startsWith('/macros/s/') ||
-      !endpointUrl.pathname.endsWith('/exec')
-    ) {
-      console.error('Google Apps Script URL must be a deployed HTTPS Web App endpoint.');
-      return NextResponse.json(
-        { error: 'Demo requests are temporarily unavailable. Please contact WePass directly.' },
-        { status: 503 }
-      );
-    }
 
     let body: unknown;
     try {
@@ -218,6 +185,95 @@ export async function submitLead(req: NextRequest) {
       return NextResponse.json({ error: 'Refresh the form and submit your demo request again.' }, { status: 400 });
     }
 
+    if (isDemo) {
+      const demoRequestData = {
+        contactPersonName: values.contactPersonName,
+        businessName: values.businessName,
+        businessType,
+        city: values.city,
+        district: values.district,
+        state: values.state,
+        whatsappNumber: `+${digits}`,
+        email,
+        notes,
+        preferredDemoDate,
+        preferredDemoTime,
+        demoDuration,
+      };
+      try {
+        const savedRequest = await prisma.demoRequest.upsert({
+          where: { requestId },
+          create: { requestId, ...demoRequestData },
+          update: {},
+        });
+        databaseSaved = Object.entries(demoRequestData).every(
+          ([field, value]) => savedRequest[field as keyof typeof demoRequestData] === value
+        );
+        if (!databaseSaved) {
+          return NextResponse.json(
+            { error: 'This request ID is already associated with different details. Refresh the form and try again.' },
+            { status: 409 }
+          );
+        }
+      } catch (error) {
+        console.error(
+          'Demo request could not be saved to the application database.',
+          error instanceof Error ? error.name : 'Unknown error.'
+        );
+      }
+    }
+
+    if (!endpoint || !apiSecret) {
+      const missing = [
+        !endpoint && 'GOOGLE_SCRIPT_WEB_APP_URL',
+        !apiSecret && 'GOOGLE_SCRIPT_API_SECRET',
+      ].filter(Boolean);
+      console.error(`Business lead submission is unavailable; missing server configuration: ${missing.join(', ')}.`);
+      return NextResponse.json(
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but Google Sheets is not configured. Please contact WePass to complete your booking.'
+            : 'We could not save your request. Please try again or contact WePass.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'not_configured' },
+        },
+        { status: 503 }
+      );
+    }
+
+    let endpointUrl: URL;
+    try {
+      endpointUrl = new URL(endpoint);
+    } catch {
+      console.error('GOOGLE_SCRIPT_WEB_APP_URL is not a valid URL.');
+      return NextResponse.json(
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but the Google Sheets connection is not configured correctly. Please contact WePass.'
+            : 'We could not save your request. Please try again or contact WePass.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'not_configured' },
+        },
+        { status: 503 }
+      );
+    }
+
+    if (
+      endpointUrl.protocol !== 'https:' ||
+      endpointUrl.hostname !== 'script.google.com' ||
+      !endpointUrl.pathname.startsWith('/macros/s/') ||
+      !endpointUrl.pathname.endsWith('/exec')
+    ) {
+      console.error('Google Apps Script URL must be a deployed HTTPS Web App endpoint.');
+      return NextResponse.json(
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but the Google Sheets connection is not configured correctly. Please contact WePass.'
+            : 'We could not save your request. Please try again or contact WePass.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'not_configured' },
+        },
+        { status: 503 }
+      );
+    }
+
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -247,7 +303,12 @@ export async function submitLead(req: NextRequest) {
     } catch {
       console.error(`Google Apps Script returned an invalid response (HTTP ${response.status}).`);
       return NextResponse.json(
-        { error: 'We could not confirm that your details were saved. Please try again.' },
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but we could not confirm the Google Sheets save. Please try again; it is safe to submit again.'
+            : 'We could not confirm that your details were saved. Please try again.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'unknown' },
+        },
         { status: 502 }
       );
     }
@@ -264,7 +325,10 @@ export async function submitLead(req: NextRequest) {
       console.error(`Google Apps Script did not confirm the lead save (HTTP ${response.status}).`);
       return NextResponse.json(
         {
-          error: 'We could not confirm that your details were saved. Please try again.',
+          error: databaseSaved
+            ? 'Your request was saved on this site, but Google Sheets did not confirm it. Please try again; it is safe to submit again.'
+            : 'We could not confirm that your details were saved. Please try again.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'unknown' },
         },
         { status: 502 }
       );
@@ -274,7 +338,42 @@ export async function submitLead(req: NextRequest) {
     if (statuses.sheets !== 'saved') {
       console.error(`Google Apps Script did not confirm the Sheets save (HTTP ${response.status}).`);
       return NextResponse.json(
-        { error: 'We could not confirm that your details were saved. Please try again.' },
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but we could not confirm the Google Sheets save. Please try again; it is safe to submit again.'
+            : 'We could not confirm that your details were saved. Please try again.',
+          statuses: { ...statuses, database: databaseSaved ? 'saved' : 'failed' },
+        },
+        { status: 502 }
+      );
+    }
+
+    if (isDemo && databaseSaved) {
+      try {
+        await prisma.demoRequest.update({
+          where: { requestId },
+          data: {
+            sheetsStatus: statuses.sheets,
+            gmailStatus: statuses.gmail,
+            calendarStatus: statuses.calendar,
+            customerConfirmationStatus: statuses.customerConfirmation,
+          },
+        });
+      } catch (error) {
+        databaseSaved = false;
+        console.error(
+          'Demo request integration statuses could not be saved to the application database.',
+          error instanceof Error ? error.name : 'Unknown error.'
+        );
+      }
+    }
+
+    if (isDemo && !databaseSaved) {
+      return NextResponse.json(
+        {
+          error: 'Your request was saved to Google Sheets, but we could not confirm the local backup. Please try again; it is safe to submit again.',
+          statuses: { ...statuses, database: 'failed' },
+        },
         { status: 502 }
       );
     }
@@ -282,7 +381,7 @@ export async function submitLead(req: NextRequest) {
     return NextResponse.json({
       success: true,
       requestId: 'requestId' in result && typeof result.requestId === 'string' ? result.requestId : requestId,
-      statuses,
+      statuses: { ...statuses, database: isDemo ? 'saved' : 'not_applicable' },
     });
   } catch (error) {
     console.error(
@@ -291,12 +390,22 @@ export async function submitLead(req: NextRequest) {
     );
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
       return NextResponse.json(
-        { error: 'The request to save your details timed out. Please try again.' },
+        {
+          error: databaseSaved
+            ? 'Your request was saved on this site, but the Google Sheets request timed out. Please try again; it is safe to submit again.'
+            : 'The request to save your details timed out. Please try again.',
+          statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'unknown' },
+        },
         { status: 504 }
       );
     }
     return NextResponse.json(
-      { error: 'We could not save your details right now. Please try again.' },
+      {
+        error: databaseSaved
+          ? 'Your request was saved on this site, but we could not confirm the Google Sheets save. Please try again; it is safe to submit again.'
+          : 'We could not save your details right now. Please try again.',
+        statuses: { database: databaseSaved ? 'saved' : 'failed', sheets: 'unknown' },
+      },
       { status: 502 }
     );
   }

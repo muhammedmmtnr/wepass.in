@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Your account is suspended or inactive.' }, { status: 403 });
     }
 
-    if (!['RESTAURANT_OWNER', 'RESTAURANT_MANAGER', 'RESTAURANT_STAFF'].includes(user.role)) {
+    if (!['ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_MANAGER', 'RESTAURANT_STAFF'].includes(user.role)) {
       return NextResponse.json({ error: 'This account role is no longer supported.' }, { status: 403 });
     }
 

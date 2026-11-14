@@ -44,6 +44,10 @@ export async function POST(
     if (!name || !email) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
+    const staffRole = role || 'RESTAURANT_STAFF';
+    if (!['RESTAURANT_MANAGER', 'RESTAURANT_STAFF'].includes(staffRole)) {
+      return NextResponse.json({ error: 'Choose a valid restaurant staff role.' }, { status: 400 });
+    }
 
     const cleanEmail = email.toLowerCase().trim();
     let user = await prisma.user.findUnique({
@@ -59,7 +63,7 @@ export async function POST(
           email: cleanEmail,
           passwordHash,
           phone: phone ? phone.trim() : null,
-          role: role || 'RESTAURANT_STAFF',
+          role: staffRole,
           status: 'ACTIVE',
         },
       });
@@ -82,7 +86,7 @@ export async function POST(
       data: {
         userId: user.id,
         restaurantId,
-        role: role || 'RESTAURANT_STAFF',
+        role: staffRole,
         isActive: true,
       },
       include: { user: true },

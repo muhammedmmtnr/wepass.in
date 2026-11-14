@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next';
+// @ts-expect-error Next.js handles global CSS imports at build time.
 import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://wepass.in'),
   title: 'WePass — Your Queue. Your Time. Your Table.',
-  description: 'Join restaurant queues by QR code, track your place in real time, and help your team manage tables with WePass.',
+  description: 'Join restaurant queues by QR code,track your place in real time, and help your team manage tables with WePass.',
   alternates: {
     canonical: '/',
   },

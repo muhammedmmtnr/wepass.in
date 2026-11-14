@@ -259,3 +259,29 @@ model SystemAuditLog {
 
   performedBy       User?     @relation(fields: [performedByUserId], references: [id], onDelete: SetNull)
 }
+
+model DemoRequest {
+  requestId                   String   @id
+  leadId                      String   @unique @default(uuid())
+  contactPersonName           String
+  businessName                String
+  businessType                String   @default("")
+  city                        String?
+  district                    String
+  state                       String
+  whatsappNumber              String
+  email                       String   @default("")
+  notes                       String   @default("")
+  preferredDemoDate           String   @default("")
+  preferredDemoTime           String   @default("")
+  demoDuration                Int      @default(30)
+  status                      String   @default("NEW")
+  scheduledDemoDate           DateTime?
+  internalNotes               String   @default("")
+  sheetsStatus                String   @default("PENDING")
+  gmailStatus                 String   @default("PENDING")
+  calendarStatus              String   @default("PENDING")
+  customerConfirmationStatus  String   @default("PENDING")
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}

@@ -112,31 +112,20 @@ GOOGLE_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/AKfycbzTLSjASt2__m
 GOOGLE_SCRIPT_API_SECRET="<same random secret configured in Apps Script Script Properties>"
 ```
 
-### Book a Demo: Sheets, email, and Calendar
+### Demo requests and administration
 
-The demo form sends to the server-side `/api/book-demo` route. General business leads continue to use `/api/leads`. The server validates the values and forwards them to Apps Script; `GOOGLE_SCRIPT_API_SECRET` is never sent to browser code.
+The public demo form posts to `/api/demo-requests`. The API validates the required full name, international WhatsApp number, and business name; city is optional. It stores each request in the application's Prisma database with a generated lead ID, creation time, and `NEW` status. Repeated submissions using the same request ID are idempotent, and a repeat request for the same business and WhatsApp number within 24 hours reuses the saved lead instead of creating another.
 
-Restaurant/business name, owner/contact name, city, district, state, and WhatsApp number are required. Email and requirements are optional. A preferred demo date and time can still be supplied for calendar scheduling; leave both blank to request a demo without selecting a slot.
+Apply the updated Prisma schema to each environment with `npm run prisma:push` using that environment's `DATABASE_URL`. Production must use a persistent database; in particular, SQLite deployments need persistent storage. Do not run this command against a production database until its target and backup are verified.
 
-1. Make sure the Google account that owns the Apps Script has Editor access to spreadsheet `1ucfsdaEja37Pf1rcFEeGTh-hxDR50tO-lZHMO-vSzZc`.
-2. In **Extensions → Apps Script**, update the deployed project with [`google-apps-script/Code.gs`](./google-apps-script/Code.gs). Existing lead rows are preserved; the script checks the original ten headers and appends any missing integration columns.
-3. In Apps Script **Project Settings → Script Properties**, set:
-   - `API_SECRET`: the existing strong secret, matching `GOOGLE_SCRIPT_API_SECRET` in the server environment.
-   - `NOTIFICATION_EMAIL`: `wepass.official@gmail.com`.
-   - `CALENDAR_ID`: optional; leave unset to use the authorized account's default Calendar.
-4. Run `authorizeGoogleServices` from the Apps Script editor and approve the requested Sheets, Gmail, and Calendar scopes using the authorized WE PASS Google account.
-5. Deploy a new **Web app** version with **Execute as: Me** and **Who has access: Anyone**. Keep the existing `/exec` URL configured below, or update it if the deployment produces a new URL.
-6. Configure `GOOGLE_SCRIPT_WEB_APP_URL` and `GOOGLE_SCRIPT_API_SECRET` on the local server and production host. `.env.local` is ignored by Git. Never put the secret in client code, source files, or logs.
+Administrators can use `/admin/demo-leads` to search and filter requests, contact owners through WhatsApp, change a lead's status, add internal notes, and schedule or update demos. Sign in with an active account whose database role is `ADMIN`; administrator accounts must be provisioned through a trusted database administration process and cannot be self-created through public registration. The admin API verifies the account and role for every read and update.
 
-The API returns HTTP 503 when either server-side variable is missing or invalid. A local `.env.local` does not configure the production host: set both values in the production deployment's server environment and redeploy/restart it. The API only reports success after Apps Script confirms `statuses.sheets: "saved"`.
-
-The `WE PASS Leads` sheet gains columns for business type, requested demo date/time, duration, Calendar Event ID, email/calendar statuses, lead status, request ID, and customer confirmation status. Existing leads are not removed. Demo requests default to 30 minutes and offer 30-, 45-, or 60-minute durations. Date/time validation and Calendar event creation use Asia/Kolkata. Calendar events have no guests and are explicitly pending; a time conflict is recorded for rescheduling instead of creating an event.
-
-The request ID makes repeated submissions idempotent: a saved lead is not duplicated, completed emails are not resent, and an event with the request ID is recovered rather than duplicated. Failed or unconfigured integrations are recorded in the row; run `retryFailedIntegrations` from the Apps Script editor after correcting configuration to retry them safely. A `Sending` status is intentionally not retried automatically, to avoid duplicate email if execution stops during delivery; inspect that request manually before changing its status. A conflicting slot is emailed to WE PASS with `Conflict / Needs Rescheduling`; it is not automatically rescheduled. The website reports Sheets, business email, Calendar, and customer confirmation statuses separately. It never describes the preferred slot as confirmed.
-
-The deployment and Google authorization cannot be verified from the repository. After setup, submit an authorized test request and inspect the row, Gmail, and Calendar before treating the integration as live.
+The success screen appears only after the database confirms a saved lead. The WhatsApp contact link is optional and opens separately, so closing WhatsApp does not undo the saved request. General business enquiries continue to use `/api/leads` and their existing Google Apps Script integration.
 
 ### 3. Initialize Database & Seed Demo Data
+
+Prisma CLI commands and standalone Node tests do not load Next.js `.env.local`. Make `DATABASE_URL` available in the shell or put it in a Prisma-readable `.env` file before running them.
+
 ```bash
 # Push schema to SQLite database
 npm run prisma:push
