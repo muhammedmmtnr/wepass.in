@@ -68,8 +68,8 @@ const faqs = [
 const navigationLinks = [
   ['Home', '#top'],
   ['About', '#about'],
-  ['Features', '#product'],
   ['How It Works', '#how-it-works'],
+  ['Features', '#product'],
   ['Pricing', '#pricing'],
   ['Contact', '#contact'],
 ] as const;
@@ -103,7 +103,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const sectionIds = ['home', 'about', 'product', 'how-it-works', 'pricing', 'contact'];
+    const sectionIds = ['home', 'about', 'how-it-works', 'product', 'pricing', 'contact'];
     const sections = sectionIds
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
@@ -859,9 +859,9 @@ export default function HomePage() {
                 Everything your team needs to manage restaurant queues and give guests a clearer dining experience.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link href="/business-registration" className="home-primary-button">
-                  Get Started <ArrowRight className="h-4 w-4" />
-                </Link>
+                <button type="button" onClick={() => setDemoOpen(true)} className="home-primary-button">
+                  Book a Demo <ArrowRight className="h-4 w-4" />
+                </button>
                 <Link href="#how-it-works" className="home-outline-button">
                   Explore how it works
                 </Link>
@@ -1087,8 +1087,7 @@ export default function HomePage() {
                 unit: '/ month',
                 features: ['Basic platform functionality', 'No data access', 'Standard features', 'Monthly subscription validity'],
                 note: 'Best for customers who need basic functionality.',
-                action: 'Get Started',
-                href: '/business-registration',
+                action: 'Book a Demo',
               },
               {
                 name: 'WePass Premium',
@@ -1097,8 +1096,7 @@ export default function HomePage() {
                 unit: '/ month',
                 features: ['All Basic functionality', 'Data access', 'Advanced features', 'Reports and insights', 'Three-month subscription validity'],
                 note: 'Best for customers who need data and advanced functionality.',
-                action: 'Get Started',
-                href: '/business-registration',
+                action: 'Book a Demo',
                 popular: true,
               },
               {
@@ -1108,8 +1106,7 @@ export default function HomePage() {
                 unit: '',
                 features: ['Custom functionality', 'Custom data access', 'Business-specific requirements', 'Flexible validity', 'Individually agreed pricing'],
                 note: 'Tailored for your business needs.',
-                action: 'Contact Us',
-                href: '/business-registration',
+                action: 'Book a Demo',
               },
             ].map((plan) => (
               <article key={plan.name} className={`home-pricing-plan${plan.popular ? ' home-pricing-plan-popular' : ''}`}>
@@ -1127,12 +1124,13 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <p className="home-pricing-note">{plan.note}</p>
-                <Link
-                  href={plan.href}
+                <button
+                  type="button"
+                  onClick={() => setDemoOpen(true)}
                   className={plan.popular ? 'home-pricing-action home-pricing-action-primary' : 'home-pricing-action'}
                 >
                   {plan.action} <ArrowRight aria-hidden="true" />
-                </Link>
+                </button>
               </article>
             ))}
           </div>
@@ -1148,7 +1146,7 @@ export default function HomePage() {
           <h2>Make every restaurant visit smarter.</h2>
           <p>Experience a simpler way to manage queues and restaurant visits with WePass.</p>
           <div className="home-final-cta-actions">
-            <Link href="/business-registration" className="home-final-primary">Get Started <ArrowRight className="h-4 w-4" /></Link>
+            <button type="button" onClick={() => setDemoOpen(true)} className="home-final-primary">Book a Demo <ArrowRight className="h-4 w-4" /></button>
             <Link href="#how-it-works" className="home-final-secondary">Join Queue</Link>
           </div>
         </div>
@@ -1220,8 +1218,8 @@ export default function HomePage() {
                 {[
                   ['Home', '#top'],
                   ['About', '#about'],
-                  ['Features', '#product'],
                   ['How It Works', '#how-it-works'],
+                  ['Features', '#product'],
                   ['Pricing', '#pricing'],
                   ['Contact', '#contact'],
                 ].map(([label, href]) => (
