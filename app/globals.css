@@ -3130,81 +3130,6 @@ select {
   background: linear-gradient(100deg, #119d5d, #066641);
 }
 
-.home-final-cta {
-  overflow: hidden;
-  background: radial-gradient(ellipse at 50% 0%, rgba(77, 201, 130, 0.65), transparent 58%), linear-gradient(135deg, #0d6845, #064d33);
-  padding-block: clamp(3.5rem, 8vw, 6.5rem);
-  color: #fff;
-  text-align: center;
-}
-
-.home-eyebrow-light {
-  color: #d7f6e2;
-}
-
-.home-eyebrow-light > span {
-  background: #82e2a7;
-  box-shadow: 0 0 0 0.25rem rgba(130, 226, 167, 0.15);
-}
-
-.home-final-cta h2 {
-  max-width: 50rem;
-  margin: 1rem auto 0;
-  font-size: clamp(2rem, 5vw, 3.7rem);
-  font-weight: 750;
-  letter-spacing: -0.055em;
-  line-height: 1.05;
-  text-wrap: balance;
-}
-
-.home-final-cta > .page-container > p:not(.home-eyebrow) {
-  max-width: 38rem;
-  margin: 1rem auto 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
-  line-height: 1.7;
-}
-
-.home-final-cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-}
-
-.home-final-primary,
-.home-final-secondary {
-  display: inline-flex;
-  min-height: 2.9rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 999px;
-  padding: 0.75rem 1.4rem;
-  font-size: 0.82rem;
-  font-weight: 750;
-  transition: transform 160ms ease, background-color 160ms ease;
-}
-
-.home-final-primary {
-  border: 0;
-  background: #fff;
-  color: #087c50;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.home-final-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  color: #fff;
-}
-
-.home-final-primary:hover,
-.home-final-secondary:hover {
-  transform: translateY(-2px);
-}
-
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-hero-stage {
     display: grid;
@@ -3687,9 +3612,7 @@ select {
   .home-step-card,
   .home-customer-feature,
   .home-outline-button,
-  .home-primary-button,
-  .home-final-primary,
-  .home-final-secondary {
+  .home-primary-button {
     transition: none;
   }
 }
@@ -3871,11 +3794,12 @@ select {
 
 .home-footer-wordmark {
   height: clamp(4.5rem, 14vw, 11rem);
+  margin-block: clamp(1rem, 2.5vw, 2rem);
   overflow: hidden;
   color: rgba(0, 169, 91, 0.2);
   font-size: clamp(4.25rem, 16vw, 13rem);
   font-weight: 850;
-  letter-spacing: -0.085em;
+  letter-spacing: 0.02em;
   line-height: 0.85;
   text-align: center;
   white-space: nowrap;
@@ -4480,8 +4404,6 @@ select {
 .home-header .home-demo-nav-button,
 .home-hero-copy > div > a,
 .home-pricing-action,
-.home-final-cta-actions > a,
-.home-final-cta-actions > button,
 .home-footer-links a,
 .home-footer-connect > a,
 .home-footer-bottom > a {
@@ -4500,19 +4422,13 @@ select {
 .home-hero-copy > div > a:hover,
 .home-hero-copy > div > a:focus-visible,
 .home-pricing-action:hover,
-.home-pricing-action:focus-visible,
-.home-final-cta-actions > a:hover,
-.home-final-cta-actions > a:focus-visible,
-.home-final-cta-actions > button:hover,
-.home-final-cta-actions > button:focus-visible {
+.home-pricing-action:focus-visible {
   transform: perspective(700px) translateY(-2px) rotateX(4deg);
 }
 
 .home-header .home-demo-nav-button:active,
 .home-hero-copy > div > a:active,
-.home-pricing-action:active,
-.home-final-cta-actions > a:active,
-.home-final-cta-actions > button:active {
+.home-pricing-action:active {
   transform: perspective(700px) translateY(1px) scale(0.98);
 }
 
@@ -4530,8 +4446,6 @@ select {
   .home-header .home-demo-nav-button,
   .home-hero-copy > div > a,
   .home-pricing-action,
-  .home-final-cta-actions > a,
-  .home-final-cta-actions > button,
   .home-footer-links a,
   .home-footer-connect > a,
   .home-footer-bottom > a {
@@ -4546,15 +4460,9 @@ select {
   .home-hero-copy > div > a:focus-visible,
   .home-pricing-action:hover,
   .home-pricing-action:focus-visible,
-  .home-final-cta-actions > a:hover,
-  .home-final-cta-actions > a:focus-visible,
-  .home-final-cta-actions > button:hover,
-  .home-final-cta-actions > button:focus-visible,
   .home-header .home-demo-nav-button:active,
   .home-hero-copy > div > a:active,
   .home-pricing-action:active,
-  .home-final-cta-actions > a:active,
-  .home-final-cta-actions > button:active,
   .home-footer-links a:hover,
   .home-footer-links a:focus-visible,
   .home-footer-connect > a:hover,
