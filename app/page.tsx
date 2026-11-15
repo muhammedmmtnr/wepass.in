@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -77,6 +77,7 @@ const navigationLinks = [
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('#top');
   const [proofStats, setProofStats] = useState<ProofStats | null>(null);
   const [proofError, setProofError] = useState(false);
@@ -440,6 +441,7 @@ export default function HomePage() {
   }, []);
 
   const closeMenu = () => setMobileMenuOpen(false);
+  const closeDemo = useCallback(() => setDemoOpen(false), []);
 
   return (
     <main id="top" className="overflow-clip bg-white text-[#17231D]">
@@ -469,12 +471,16 @@ export default function HomePage() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <a
-                href="#book-demo"
-                className="home-demo-nav-button inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#A6F1B8] px-4 text-xs font-bold text-[#153528] transition hover:-translate-y-0.5 hover:bg-[#8DE8A5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#237A50] focus-visible:ring-offset-2 sm:px-5"
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  setDemoOpen(true);
+                }}
+                className="home-demo-nav-button inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#A6F1B8] px-4 text-xs font-bold text-[#153528] transition hover:-translate-y-0.5 hover:bg-[#8DE8A5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#237A50] focus-visible:ring-offset-2 sm:px-5"
               >
                 Book a Demo <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              </button>
               <button
                 type="button"
                 aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -1169,7 +1175,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <BookDemoSection />
+      <BookDemoSection isOpen={demoOpen} onClose={closeDemo} />
 
       <footer className="home-footer">
         <div className="home-footer-orbit home-footer-orbit-left" aria-hidden="true" />

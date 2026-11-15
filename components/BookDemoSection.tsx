@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { ArrowRight, Check, LoaderCircle, MessageCircle, Send } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowRight, Check, LoaderCircle, MessageCircle, Send, X } from 'lucide-react';
 import styles from './BookDemoSection.module.css';
 
 type DemoForm = {
@@ -20,13 +20,33 @@ const initialForm: DemoForm = {
 
 const whatsappContact = '917406400140';
 
-export default function BookDemoSection() {
+type BookDemoSectionProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function BookDemoSection({ isOpen, onClose }: BookDemoSectionProps) {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const dialogRef = useRef<HTMLElement>(null);
   const requestId = useRef<string | null>(null);
   const submissionLock = useRef(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [isOpen]);
 
   const updateField = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -85,9 +105,57 @@ export default function BookDemoSection() {
   );
   const whatsappUrl = `https://wa.me/${whatsappContact}?text=${whatsappMessage}`;
 
+  const handleDialogKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (!focusable?.length) {
+      event.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <section id="book-demo" className={styles.section} aria-labelledby="book-demo-heading">
+    <div
+      className={styles.backdrop}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        id="book-demo"
+        ref={dialogRef}
+        className={styles.section}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="book-demo-heading"
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
+      >
       <div className={styles.container}>
+        <button className={styles.closeButton} type="button" onClick={onClose} aria-label="Close demo request">
+          <X aria-hidden="true" />
+        </button>
         <div className={styles.formColumn}>
           <p className={styles.eyebrow}>A better guest experience starts here</p>
           <h2 id="book-demo-heading" className={styles.heading}>See WePass in Action</h2>
@@ -188,6 +256,7 @@ export default function BookDemoSection() {
           )}
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   );
 }

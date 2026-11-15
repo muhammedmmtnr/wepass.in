@@ -25,7 +25,7 @@
 html {
   min-width: 320px;
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -947,7 +947,7 @@ select {
     gap: 0.35rem;
   }
 
-  .home-nav-shell > div > a {
+  .home-nav-shell > div > button.home-demo-nav-button {
     padding-inline: 0.65rem;
     font-size: 0.65rem;
   }
@@ -4023,14 +4023,6 @@ select {
   box-shadow: 0 7px 18px rgba(35, 122, 80, 0.14);
 }
 
-#about,
-#product,
-#how-it-works,
-#pricing,
-#contact {
-  scroll-margin-top: 6rem;
-}
-
 .home-nav-shell nav a {
   min-height: 2.5rem;
   display: inline-flex;
@@ -4039,14 +4031,14 @@ select {
   white-space: nowrap;
 }
 
-.home-nav-shell > div > a:first-child {
+.home-nav-shell > div > button.home-demo-nav-button {
   min-height: 2.75rem;
   background: #a6f1b8;
   box-shadow: none;
   color: #153528;
 }
 
-.home-nav-shell > div > a:first-child:hover {
+.home-nav-shell > div > button.home-demo-nav-button:hover {
   background: #8de8a5;
   box-shadow: none;
 }
@@ -4301,6 +4293,10 @@ select {
 }
 
 @media (max-width: 767px) {
+  html {
+    scroll-padding-top: 5rem;
+  }
+
   .home-header {
     background: rgba(245, 253, 248, 0.94);
   }
@@ -4317,14 +4313,6 @@ select {
     min-height: 3.55rem;
     border-radius: 999px;
     padding-inline: 0.7rem;
-  }
-
-  #about,
-  #product,
-  #how-it-works,
-  #pricing,
-  #contact {
-    scroll-margin-top: 5rem;
   }
 
   .home-hero-heading {
@@ -4376,13 +4364,13 @@ select {
     gap: 0.35rem;
   }
 
-  .home-nav-shell > div > a.home-demo-nav-button {
+  .home-nav-shell > div > button.home-demo-nav-button {
     gap: 0.3rem;
     padding-inline: 0.55rem;
     font-size: 0.68rem;
   }
 
-  .home-nav-shell > div > a.home-demo-nav-button svg {
+  .home-nav-shell > div > button.home-demo-nav-button svg {
     width: 0.8rem;
     height: 0.8rem;
   }
@@ -4427,6 +4415,135 @@ select {
   .home-product-feature-card:hover,
   .home-feature-showcase .home-dashboard-stat-card:hover,
   .home-purpose-card:hover {
+    transform: none;
+  }
+}
+
+.home-header {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.home-nav-shell,
+.home-header.is-scrolled .home-nav-shell {
+  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 28px rgba(30, 94, 58, 0.055);
+  backdrop-filter: blur(18px);
+}
+
+.home-header.is-scrolled .home-nav-shell {
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.home-nav-shell nav a[aria-current="location"] {
+  background: rgba(189, 245, 207, 0.58);
+}
+
+.home-hero {
+  background: #f4faf6;
+}
+
+.home-hero::before,
+.home-hero::after,
+.home-hero-glow,
+.home-hero-rings {
+  display: none;
+}
+
+.home-hero-heading .home-heading-accent {
+  background: none;
+  color: #087c50;
+  -webkit-text-fill-color: currentColor;
+}
+
+.home-hero-copy > div > a:first-child {
+  background: #087c50;
+  box-shadow: 0 7px 16px rgba(8, 124, 80, 0.16);
+}
+
+.home-hero-copy > div > a:first-child:hover {
+  background: #066641;
+  box-shadow: 0 10px 20px rgba(8, 124, 80, 0.2);
+}
+
+.home-header nav a,
+.home-header .home-demo-nav-button,
+.home-hero-copy > div > a,
+.home-pricing-action,
+.home-final-cta-actions > a,
+.home-footer-links a,
+.home-footer-connect > a,
+.home-footer-bottom > a {
+  transform-style: preserve-3d;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    box-shadow 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.home-header nav a:hover,
+.home-header nav a:focus-visible,
+.home-header .home-demo-nav-button:hover,
+.home-header .home-demo-nav-button:focus-visible,
+.home-hero-copy > div > a:hover,
+.home-hero-copy > div > a:focus-visible,
+.home-pricing-action:hover,
+.home-pricing-action:focus-visible,
+.home-final-cta-actions > a:hover,
+.home-final-cta-actions > a:focus-visible {
+  transform: perspective(700px) translateY(-2px) rotateX(4deg);
+}
+
+.home-header .home-demo-nav-button:active,
+.home-hero-copy > div > a:active,
+.home-pricing-action:active,
+.home-final-cta-actions > a:active {
+  transform: perspective(700px) translateY(1px) scale(0.98);
+}
+
+.home-footer-links a:hover,
+.home-footer-links a:focus-visible,
+.home-footer-connect > a:hover,
+.home-footer-connect > a:focus-visible,
+.home-footer-bottom > a:hover,
+.home-footer-bottom > a:focus-visible {
+  transform: perspective(700px) translateX(3px) rotateY(-4deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-header nav a,
+  .home-header .home-demo-nav-button,
+  .home-hero-copy > div > a,
+  .home-pricing-action,
+  .home-final-cta-actions > a,
+  .home-footer-links a,
+  .home-footer-connect > a,
+  .home-footer-bottom > a {
+    transition: none;
+  }
+
+  .home-header nav a:hover,
+  .home-header nav a:focus-visible,
+  .home-header .home-demo-nav-button:hover,
+  .home-header .home-demo-nav-button:focus-visible,
+  .home-hero-copy > div > a:hover,
+  .home-hero-copy > div > a:focus-visible,
+  .home-pricing-action:hover,
+  .home-pricing-action:focus-visible,
+  .home-final-cta-actions > a:hover,
+  .home-final-cta-actions > a:focus-visible,
+  .home-header .home-demo-nav-button:active,
+  .home-hero-copy > div > a:active,
+  .home-pricing-action:active,
+  .home-final-cta-actions > a:active,
+  .home-footer-links a:hover,
+  .home-footer-links a:focus-visible,
+  .home-footer-connect > a:hover,
+  .home-footer-connect > a:focus-visible,
+  .home-footer-bottom > a:hover,
+  .home-footer-bottom > a:focus-visible {
     transform: none;
   }
 }

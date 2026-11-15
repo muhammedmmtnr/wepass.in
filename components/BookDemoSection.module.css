@@ -1,44 +1,64 @@
+.backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(15, 32, 23, 0.42);
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+}
+
 .section {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding-block: clamp(3.5rem, 8vw, 7rem);
-  background: #e8f3ec;
-  scroll-margin-top: 6rem;
-}
-
-.section::before,
-.section::after {
-  position: absolute;
-  z-index: -1;
-  width: 25rem;
-  aspect-ratio: 1;
-  border: 1px solid rgba(8, 126, 74, 0.1);
-  border-radius: 50%;
-  content: "";
-  pointer-events: none;
-}
-
-.section::before {
-  top: -17rem;
-  right: -9rem;
-}
-
-.section::after {
-  bottom: -19rem;
-  left: -12rem;
-  width: 30rem;
+  width: min(42rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  border-radius: 1.75rem;
+  outline: none;
 }
 
 .container {
-  width: min(42rem, calc(100% - 2rem));
+  position: relative;
+  width: 100%;
   margin-inline: auto;
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 1.75rem;
   background: rgba(255, 255, 255, 0.94);
-  padding: clamp(1.35rem, 5vw, 3rem);
+  padding: clamp(1.6rem, 5vw, 3rem);
   box-shadow: 0 25px 70px rgba(27, 85, 52, 0.1), 0 2px 8px rgba(25, 68, 42, 0.035);
   animation: rise-in 500ms ease both;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid #e4ece6;
+  border-radius: 50%;
+  background: #fff;
+  color: #52665a;
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.closeButton:hover {
+  transform: rotate(8deg) scale(1.04);
+  background: #f0fbf4;
+}
+
+.closeButton svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.closeButton:focus-visible {
+  outline: 3px solid rgba(8, 189, 115, 0.45);
+  outline-offset: 3px;
 }
 
 .formColumn {
@@ -279,10 +299,20 @@
   .fieldGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .backdrop {
+    place-items: start center;
+    padding: 0.65rem;
+  }
+
+  .section {
+    max-height: calc(100dvh - 1.3rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .container,
+  .closeButton,
   .field input,
   .submit,
   .whatsappButton {
