@@ -109,19 +109,6 @@ select {
   font-size: clamp(0.95rem, 1.3vw, 1.2rem);
 }
 
-.home-header {
-  background: linear-gradient(180deg, rgba(232, 243, 236, 0.72), rgba(232, 243, 236, 0));
-}
-
-.home-nav-shell {
-  min-height: 3.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 9999px;
-  background: rgba(232, 243, 236, 0.82);
-  box-shadow: 0 10px 32px rgba(34, 86, 57, 0.08);
-  backdrop-filter: blur(18px);
-}
-
 .home-hero {
   background:
     radial-gradient(ellipse at 50% 62%, rgba(166, 241, 184, 0.5), rgba(221, 245, 232, 0.28) 34%, transparent 68%),
@@ -3899,52 +3886,6 @@ select {
 
 }
 
-.home-header {
-  background: linear-gradient(180deg, rgba(246, 255, 249, 0.9), rgba(232, 247, 237, 0.35));
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid transparent;
-  box-shadow: 0 0 0 rgba(30, 94, 58, 0);
-  transition:
-    background-color 350ms ease,
-    border-color 350ms ease,
-    box-shadow 350ms ease,
-    backdrop-filter 350ms ease;
-}
-
-.home-header.is-scrolled {
-  border-bottom-color: rgba(215, 230, 219, 0.82);
-  background: rgba(247, 252, 248, 0.86);
-  box-shadow: 0 8px 24px rgba(30, 72, 46, 0.07);
-  backdrop-filter: blur(16px);
-}
-
-.home-header-inner {
-  height: 76px;
-  transition: height 350ms ease;
-}
-
-.home-header.is-scrolled .home-header-inner {
-  height: 66px;
-}
-
-.home-nav-shell {
-  min-height: 4rem;
-  border-color: rgba(255, 255, 255, 0.92);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 12px 36px rgba(30, 94, 58, 0.09);
-  transition:
-    min-height 350ms ease,
-    padding 350ms ease,
-    background-color 350ms ease,
-    box-shadow 350ms ease;
-}
-
-.home-header.is-scrolled .home-nav-shell {
-  min-height: 3.5rem;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 7px 22px rgba(30, 94, 58, 0.07);
-}
-
 .home-demo-nav-button {
   transition:
     transform 300ms ease,
@@ -3965,7 +3906,8 @@ select {
 }
 
 .home-nav-shell > div > button.home-demo-nav-button {
-  min-height: 2.75rem;
+  min-height: 2.5rem;
+  border-radius: 9999px;
   background: #a6f1b8;
   box-shadow: none;
   color: #153528;
@@ -4188,14 +4130,6 @@ select {
 }
 
 @media (min-width: 1024px) {
-  .home-header-inner {
-    height: 88px;
-  }
-
-  .home-header.is-scrolled .home-header-inner {
-    height: 72px;
-  }
-
   .home-hero-stage {
     grid-template-columns: minmax(0, 1fr) 19rem minmax(0, 1fr);
     gap: clamp(1.5rem, 3vw, 2.75rem);
@@ -4212,7 +4146,7 @@ select {
 
 @media (max-width: 1023px) {
   .home-nav-shell {
-    border-radius: 1.35rem;
+    border-radius: 9999px;
   }
 
   .home-hero-stage {
@@ -4226,22 +4160,6 @@ select {
 }
 
 @media (max-width: 767px) {
-  html {
-    scroll-padding-top: 5rem;
-  }
-
-  .home-header {
-    background: rgba(245, 253, 248, 0.94);
-  }
-
-  .home-header-inner {
-    height: 76px;
-  }
-
-  .home-header.is-scrolled .home-header-inner {
-    height: 64px;
-  }
-
   .home-nav-shell {
     min-height: 3.55rem;
     border-radius: 999px;
@@ -4353,24 +4271,70 @@ select {
 }
 
 .home-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  padding-top: 12px;
+  overflow: visible;
+  border: 0;
   background: transparent;
+  box-shadow: none;
   backdrop-filter: none;
 }
 
-.home-nav-shell,
-.home-header.is-scrolled .home-nav-shell {
-  border-color: rgba(255, 255, 255, 0.62);
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 28px rgba(30, 94, 58, 0.055);
-  backdrop-filter: blur(18px);
+.home-header-inner {
+  height: auto;
 }
 
-.home-header.is-scrolled .home-nav-shell {
-  background: rgba(255, 255, 255, 0.74);
+.home-nav-shell {
+  min-height: 4rem;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+.home-nav-shell > div > button.home-demo-nav-button {
+  min-height: 2.5rem;
+  border-radius: 9999px;
 }
 
 .home-nav-shell nav a[aria-current="location"] {
   background: rgba(189, 245, 207, 0.58);
+  border-radius: 9999px;
+}
+
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-nav-shell {
+    gap: 0.4rem;
+    padding-inline: 0.65rem;
+  }
+
+  .home-nav-shell nav {
+    gap: 0;
+  }
+
+  .home-nav-shell nav a {
+    padding-inline: 0.4rem;
+    font-size: 0.68rem;
+  }
+
+  .home-nav-shell > div {
+    gap: 0.35rem;
+  }
+
+  .home-nav-shell > div > button.home-demo-nav-button {
+    padding-inline: 0.75rem;
+    font-size: 0.68rem;
+  }
 }
 
 .home-hero {

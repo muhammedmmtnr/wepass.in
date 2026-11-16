@@ -75,31 +75,11 @@ const navigationLinks = [
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [headerScrolled, setHeaderScrolled] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('#top');
   const [proofStats, setProofStats] = useState<ProofStats | null>(null);
   const [proofError, setProofError] = useState(false);
   const [activeQueueUrl, setActiveQueueUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let frame = 0;
-    const updateScrollState = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        const scrolled = window.scrollY > 12;
-        setHeaderScrolled((current) => current === scrolled ? current : scrolled);
-      });
-    };
-
-    updateScrollState();
-    window.addEventListener('scroll', updateScrollState, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', updateScrollState);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
 
   useEffect(() => {
     const sectionIds = ['home', 'about', 'how-it-works', 'product', 'pricing', 'contact'];
@@ -444,12 +424,12 @@ export default function HomePage() {
 
   return (
     <main id="top" className="overflow-clip bg-white text-[#17231D]">
-      <header className={`home-header sticky top-0 z-50${headerScrolled ? ' is-scrolled' : ''}`}>
-        <div className="home-header-inner page-container mx-auto flex h-[76px] items-center lg:h-[88px]">
-          <div className="home-nav-shell mx-auto flex w-full max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
-            <BrandLogo size="sm" />
+      <header className="home-header z-50">
+        <div className="home-header-inner page-container mx-auto flex items-center">
+          <div className="home-nav-shell mx-auto flex w-full max-w-[1100px] items-center justify-between gap-3 px-4 sm:px-6">
+            <BrandLogo size="md" />
 
-            <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+            <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
               {navigationLinks.map(([label, href]) => {
                 const isActive = activeSection === href;
                 return (
@@ -486,7 +466,7 @@ export default function HomePage() {
                 aria-expanded={mobileMenuOpen}
                 aria-controls="home-mobile-navigation"
                 onClick={() => setMobileMenuOpen((open) => !open)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#17231D] transition hover:bg-white/80 lg:hidden"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#17231D] transition hover:bg-white/80 md:hidden"
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -494,8 +474,8 @@ export default function HomePage() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <nav id="home-mobile-navigation" aria-label="Mobile navigation" className="mobile-menu-panel page-container mx-auto pb-3 lg:hidden">
-            <div className="rounded-2xl border border-white/80 bg-white/95 p-2 shadow-[0_16px_40px_rgba(20,54,38,0.12)] backdrop-blur-xl">
+          <nav id="home-mobile-navigation" aria-label="Mobile navigation" className="mobile-menu-panel page-container mx-auto pb-3 md:hidden">
+            <div className="rounded-2xl border border-white/50 bg-white/35 p-2 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-[14px]">
               {navigationLinks.map(([label, href]) => (
                 <a
                   key={label}
@@ -520,7 +500,7 @@ export default function HomePage() {
       <section id="home" className="home-hero relative isolate overflow-hidden">
         <div className="home-hero-glow" aria-hidden="true" />
         <div className="home-hero-rings" aria-hidden="true"><span /><span /></div>
-        <div className="page-container relative mx-auto pt-5 text-center sm:pt-8 lg:pt-10">
+        <div className="page-container relative mx-auto pt-24 text-center sm:pt-24 lg:pt-28">
           <div className="home-hero-copy mx-auto max-w-[900px]">
             <p className="home-hero-eyebrow mb-3 inline-flex items-center gap-2 rounded-full border border-white/90 bg-white/55 px-3.5 py-1.5 text-[11px] font-semibold text-[#244636] backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-[#56D887] shadow-[0_0_0_5px_rgba(86,216,135,0.14)]" aria-hidden="true" />
@@ -542,14 +522,6 @@ export default function HomePage() {
               Join restaurant queues,track your waiting time in real time.
               <br className="hidden sm:block" /> Everything you need.
             </p>
-            <div className="mt-5 flex flex-col justify-center gap-2.5 sm:mt-6 sm:flex-row">
-              <a href="#how-it-works" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#087C50] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#066641]">
-                Join Queue <ArrowRight className="h-4 w-4" />
-              </a>
-              <a href="#product" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#168353] bg-white/55 px-6 py-3 text-sm font-bold text-[#17372A] transition hover:bg-white">
-                Explore WePass
-              </a>
-            </div>
           </div>
 
           <div className="home-hero-stage relative mx-auto mt-4 grid w-full max-w-[1180px] items-center gap-4 pb-8 sm:mt-6 sm:pb-10 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_290px_minmax(0,1fr)] lg:gap-7 lg:pb-4">
